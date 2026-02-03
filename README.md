@@ -180,7 +180,8 @@ sequenceDiagram
   D-->>A: DM message
   A->>D: offer / counter
   D-->>B: DM message
-  A<->>B: sign deal object
+  A->>B: sign deal object
+  B->>A: sign deal object
   A->>E: escrow + shipping + insurance
   B->>E: track + confirm delivery
 ```
