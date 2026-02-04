@@ -26,6 +26,12 @@ Run the local Matrix demo and drive buy/sell negotiations using the gossip room 
 - Buyer: use `prompts/agent_b.txt`.
 - Keep messages concise and follow the prompt rules (price, shipping, confirmation).
 
+## Intake (always-on)
+The OpenClaw skill is intake-aware by default. When a human message looks like a buy/sell intent, the agent should:
+- Ask up to 3 clarifying questions.
+- Emit exactly one line:
+  `GOSSIP: LISTING_CREATE {"id":"<id>","type":"buy|sell","item":"<item>","price":<number>,"currency":"<ISO>","condition":"<condition>","ship":"<ship>","location":"<location>","notes":"<notes>"}`.
+
 ## Step 3: Gossip Then DM
 - Gossip (public): `node dist/agent.js send --config config/agent_a.json --room gossip --text "<short listing>"`.
 - DM (private): `node dist/agent.js send --config config/agent_b.json --room dm --text "<negotiation message>"`.
@@ -52,6 +58,7 @@ Business logic lives inside the OpenClaw skill/prompt. The bridge does not enfor
 Use these guardrails in the LLM policy:
 - If price/terms are outside your bounds, send `APPROVAL_REQUEST <reason>`.
 - When agreement is reached, send `DEAL_SUMMARY <summary>`.
+- After `DEAL_SUMMARY`, ask the human to confirm (e.g., "Confirm deal? Reply APPROVAL_RESPONSE approve|decline").
 - Do not send `CONFIRMED` until the human replies `APPROVAL_RESPONSE approve` (if they decline, continue negotiating or stop).
 
 ## References

@@ -1,6 +1,6 @@
 # Agent Commerce MVP
 
-In the future, humans will express intent to buy or sell to their personal IA, which will talk to other AIs to find the best offers. By offloading this type of computation to agents we actually make barter and negociation manageable on a larger scale. We can also experiment with more expressive methods of price discovery than plain marketplaces with fixed prices and Ebay auctions ([like Generalized second-price auctions](https://en.wikipedia.org/wiki/Generalized_second-price_auction)) that are more efficient but more difficult to understand and manage for humans. The purpose of this repo is to answer the question: what if we had Agents trade directly with each other rather than rely on human-first marketplaces?
+In the future, humans will express intent to buy or sell to their personal AI, which will talk to other AIs to find the best offers. By offloading this type of computation to agents we actually make barter and negociation manageable on a larger scale. We can also experiment with more expressive methods of price discovery than plain marketplaces with fixed prices and Ebay auctions ([like Generalized second-price auctions](https://en.wikipedia.org/wiki/Generalized_second-price_auction)) that are more efficient but more difficult to understand and manage for humans. The purpose of this repo is to answer the question: what if we had Agents trade directly with each other rather than rely on human-first marketplaces?
 
 We can already approximate this future with existing tools. Agent Commerce MVP is a Matrix-based demo of agent-to-agent buying and selling: humans talk to their OpenClaw and express their intents, the Agents turn those intents into structured "gossip" listings on Matrix, discover matches and negotiate with other Agents in DMs, asking for a final human approval before finalizing a deal.
 
@@ -118,12 +118,13 @@ node dist/agent.js bridge --config config/agent_b.json --session matrix-marketpl
 ```
 
 ## OpenClaw intake (human intent capture)
-Prime OpenClaw to ask clarifying questions and emit a structured listing:
+OpenClaw intake is always-on via the skill prompt. Just send your intent in OpenClaw (Telegram/WhatsApp/UI) and it will ask clarifying questions and emit `GOSSIP: LISTING_CREATE ...`.
+
+Optional (legacy) manual priming:
 ```bash
 npm run openclaw:intake -- buyer
 npm run openclaw:intake -- seller
 ```
-Then send your intent message in OpenClaw (Telegram/WhatsApp/UI).
 
 ## Telegram relay (auto-post GOSSIP lines)
 Relay `GOSSIP:` lines from a Telegram chat into Matrix gossip:

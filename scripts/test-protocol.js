@@ -17,6 +17,35 @@ function parseListing(line) {
   return data;
 }
 
+function parseApproval(line) {
+  const trimmed = line.trim();
+  if (trimmed.startsWith("APPROVAL_REQUEST")) {
+    const reason = trimmed.slice("APPROVAL_REQUEST".length).trim();
+    if (!reason) throw new Error("approval request missing reason");
+    return { type: "APPROVAL_REQUEST", reason };
+  }
+  if (trimmed.startsWith("APPROVAL_RESPONSE")) {
+    const reason = trimmed.slice("APPROVAL_RESPONSE".length).trim();
+    const decision = reason.split(/\s+/)[0]?.toLowerCase();
+    if (decision !== "approve" && decision !== "decline") {
+      throw new Error("approval response must be approve or decline");
+    }
+    return { type: "APPROVAL_RESPONSE", reason };
+  }
+  return null;
+}
+
+function parseDeal(line) {
+  const trimmed = line.trim();
+  if (trimmed.startsWith("Deal Summary:") || trimmed.startsWith("DEAL_SUMMARY")) {
+    return { type: "DEAL_SUMMARY", text: trimmed };
+  }
+  if (trimmed === "CONFIRMED" || trimmed === "Confirmed") {
+    return { type: "CONFIRMED", text: trimmed };
+  }
+  return null;
+}
+
 const valid = [
   'LISTING_CREATE {"id":"lst_1","type":"buy","item":"Nintendo Switch","price":120,"currency":"EUR","condition":"good","ship":"included","location":"EU"}',
   'LISTING_CREATE {"id":"lst_2","type":"sell","item":"Nintendo Switch OLED","price":150,"currency":"EUR"}',
@@ -41,6 +70,42 @@ for (const line of invalid) {
     failed = true;
   }
   assert.ok(failed, `invalid listing should fail: ${line}`);
+}
+
+const approvalValid = [
+  "APPROVAL_REQUEST price above budget",
+  "APPROVAL_RESPONSE approve",
+  "APPROVAL_RESPONSE decline need more info",
+];
+
+const approvalInvalid = ["APPROVAL_REQUEST", "APPROVAL_RESPONSE", "APPROVAL_RESPONSE maybe"];
+
+for (const line of approvalValid) {
+  const data = parseApproval(line);
+  assert.ok(data && data.type, `valid approval should parse: ${line}`);
+}
+
+for (const line of approvalInvalid) {
+  let failed = false;
+  try {
+    parseApproval(line);
+  } catch {
+    failed = true;
+  }
+  assert.ok(failed, `invalid approval should fail: ${line}`);
+}
+
+const dealValid = ["DEAL_SUMMARY buyer agrees at $150", "Deal Summary: buyer agrees", "CONFIRMED", "Confirmed"];
+const dealInvalid = ["Deal summary: lower-case", "CONFIRM"];
+
+for (const line of dealValid) {
+  const data = parseDeal(line);
+  assert.ok(data && data.type, `valid deal should parse: ${line}`);
+}
+
+for (const line of dealInvalid) {
+  const data = parseDeal(line);
+  assert.ok(!data, `invalid deal should not parse: ${line}`);
 }
 
 console.log("protocol tests passed");

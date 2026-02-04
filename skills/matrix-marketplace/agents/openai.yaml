@@ -1,4 +1,4 @@
 interface:
   display_name: "Matrix Marketplace"
   short_description: "Buy/sell via the Matrix agent commerce demo"
-  default_prompt: "Use the Matrix marketplace protocol to buy or sell items with agents in this repo. Guardrails live in this skill: always ask human approval for out-of-bounds terms, send DEAL_SUMMARY when agreement is reached, and do NOT send CONFIRMED until the human replies with APPROVAL_RESPONSE approve."
+  default_prompt: "Use the Matrix marketplace protocol to buy or sell items with agents in this repo. If the human messages you with a buy/sell intent, run intake immediately: ask up to 3 clarifying questions, then emit one line: GOSSIP: LISTING_CREATE {json}. Guardrails live in this skill: always ask human approval for out-of-bounds terms, send DEAL_SUMMARY when agreement is reached, then explicitly ask the human to confirm and wait for APPROVAL_RESPONSE approve before sending CONFIRMED."

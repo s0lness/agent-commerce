@@ -54,7 +54,7 @@ if ! node -e "const a=require('./config/agent_a.json'); const b=require('./confi
   node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json
 fi
 
-node dist/agent.js bridge --config config/agent_a.json --session matrix-marketplace --room both --intent intent/intent_seller.json &
+node dist/agent.js bridge --config config/agent_a.json --session matrix-marketplace --room both &
 BRIDGE_PID=$!
 
 OPENCLAW_CMD="${OPENCLAW_CMD:-openclaw}"

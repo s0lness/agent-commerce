@@ -8,15 +8,18 @@ Achieved
 - Protocol + schema: `LISTING_CREATE` structured messages logged to `logs/listings.jsonl`.
 - Intent capture: CLI intake (dev-only) and OpenClaw intake prompts + Telegram flow verified.
 - Discovery + matching: OpenClaw matches on intent (bridge forwards gossip without filtering).
-- Approval capture + gating: `APPROVAL_REQUEST` / `APPROVAL_RESPONSE` logged to `logs/approvals.jsonl`, bridge pauses until approval response.
+- Approval capture: `APPROVAL_REQUEST` / `APPROVAL_RESPONSE` logged to `logs/approvals.jsonl`.
+- Deal confirmation workflow: OpenClaw skill prompts for confirmation after `DEAL_SUMMARY` and waits for `APPROVAL_RESPONSE approve` before `CONFIRMED`.
 - UI: listings + roles + approvals panels.
 - Deal logging + UI: `DEAL_SUMMARY` / `CONFIRMED` logged to `logs/deals.jsonl` and shown in UI.
 - Telegram → Matrix relay: `telegram-relay.js` + OpenClaw cron setup for always-on relay.
+- Basic protocol tests for listings, approvals, and deals (`scripts/test-protocol.js`).
+- UI smoke test for log endpoints (`scripts/test-ui.js`).
+- Manual end-to-end checklist (`scripts/test-e2e-checklist.md`).
+- Automated e2e test (optional, requires OpenClaw + Docker): `RUN_E2E=1 npm run test:e2e`.
 
 Still missing for MVP
-- OpenClaw intake statefulness (always-on listing mode without manual priming).
-- Deal confirmation workflow (explicit human confirmation prompt + enforced `CONFIRMED`).
-- Robust testing (fixture tests for listing + matching + approvals).
+- Robust integration tests (end-to-end Matrix/OpenClaw flow, retries, and failure handling).
 
 ## Implementation Roadmap
 
@@ -28,7 +31,7 @@ Still missing for MVP
    - Targets:
      - `src/agent.ts` (parse/dispatch)
      - `scripts/` (demo scripts updated to JSON lines)
-     - `README.md` or `MVP.md` (protocol doc)
+    - `README.md` (protocol doc)
 
 2. **Intent Capture via OpenClaw (Buy/Sell intake)**
    - Goal: human says “buy/sell X” via OpenClaw, agent asks questions, then creates listing.
