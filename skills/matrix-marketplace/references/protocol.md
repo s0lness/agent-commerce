@@ -3,7 +3,7 @@
 ## Message Flow
 - Gossip room: public intent signals.
 - DM room: private negotiation.
-- Logs: `logs/gossip.log` and `logs/dm.log`.
+- Logs: `logs/gossip.log`, `logs/dm.log`, `logs/listings.jsonl`, `logs/approvals.jsonl`.
 
 ## Key Commands
 - Setup rooms: `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`
@@ -18,3 +18,9 @@
 ## Logs
 - `logs/gossip.log`
 - `logs/dm.log`
+- `logs/listings.jsonl` (structured LISTING_CREATE entries)
+- `logs/approvals.jsonl` (APPROVAL_REQUEST/APPROVAL_RESPONSE)
+
+## Approval messages
+- `APPROVAL_REQUEST <reason>`
+- `APPROVAL_RESPONSE approve|decline <optional note>`

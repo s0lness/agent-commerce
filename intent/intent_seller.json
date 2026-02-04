@@ -1,0 +1,8 @@
+{
+  "type": "sell",
+  "item_keywords": ["nintendo", "switch"],
+  "min_price": 120,
+  "currency": "EUR",
+  "condition": ["good", "working"],
+  "location": "EU"
+}

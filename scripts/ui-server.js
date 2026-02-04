@@ -32,6 +32,19 @@ function readJson(file) {
   }
 }
 
+function readJsonLines(file) {
+  try {
+    const raw = fs.readFileSync(file, "utf8");
+    return raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch {
+    return [];
+  }
+}
+
 ensureLogs();
 
 function handler(req, res) {
@@ -54,6 +67,20 @@ function handler(req, res) {
     const roles = readJson(path.join(LOG_DIR, "roles.json"));
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(roles || {}));
+    return;
+  }
+
+  if (req.url === "/listings") {
+    const listings = readJsonLines(path.join(LOG_DIR, "listings.jsonl"));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ listings }));
+    return;
+  }
+
+  if (req.url === "/approvals") {
+    const approvals = readJsonLines(path.join(LOG_DIR, "approvals.jsonl"));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ approvals }));
     return;
   }
 

@@ -1,0 +1,5 @@
+{
+  "target": "@your_chat_handle",
+  "config": "config/agent_a.json",
+  "room": "gossip"
+}

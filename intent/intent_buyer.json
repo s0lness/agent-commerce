@@ -1,0 +1,8 @@
+{
+  "type": "buy",
+  "item_keywords": ["nintendo", "switch"],
+  "max_price": 130,
+  "currency": "EUR",
+  "condition": ["good", "working"],
+  "location": "EU"
+}

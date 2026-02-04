@@ -30,7 +30,16 @@ type AgentConfig = {
   openclawCmd?: string;
 };
 
-type Command = "send" | "setup" | "scripted" | "auth" | "bridge";
+type Command = "send" | "setup" | "scripted" | "auth" | "bridge" | "intake" | "approve";
+type IntentSpec = {
+  type: "buy" | "sell";
+  item_keywords?: string[];
+  max_price?: number;
+  min_price?: number;
+  currency?: string;
+  condition?: string[];
+  location?: string;
+};
 
 function getArg(args: string[], name: string): string | null {
   const idx = args.indexOf(`--${name}`);
@@ -90,6 +99,210 @@ function appendLog(logPath: string, line: string) {
   fs.appendFileSync(logPath, line);
 }
 
+function appendJsonLine(logPath: string, obj: Record<string, unknown>) {
+  fs.appendFileSync(logPath, JSON.stringify(obj) + "\n");
+}
+
+function parseListingMessage(body: string): { type: string; data: any } | null {
+  const prefix = "LISTING_CREATE ";
+  if (!body.startsWith(prefix)) return null;
+  const raw = body.slice(prefix.length).trim();
+  if (!raw) return null;
+  const data = JSON.parse(raw);
+  return { type: "LISTING_CREATE", data };
+}
+
+function buildListingFromAnswers(
+  type: "buy" | "sell",
+  item: string,
+  price: number,
+  currency: string,
+  condition: string,
+  ship: string,
+  location: string,
+  notes: string
+) {
+  const id = `lst_${type}_${Date.now()}`;
+  return {
+    id,
+    type,
+    item,
+    price,
+    currency,
+    condition,
+    ship,
+    location,
+    notes,
+  };
+}
+
+function loadIntentJson(intentFile: string): IntentSpec | null {
+  try {
+    const raw = fs.readFileSync(intentFile, "utf8");
+    const data = JSON.parse(raw);
+    if (!data || (data.type !== "buy" && data.type !== "sell")) return null;
+    return data as IntentSpec;
+  } catch {
+    return null;
+  }
+}
+
+function matchesIntent(listing: any, intent: IntentSpec): boolean {
+  if (!listing || !intent) return false;
+  const listingType = String(listing.type ?? "").toLowerCase();
+  const intentType = intent.type;
+  if (intentType === "buy" && listingType !== "sell") return false;
+  if (intentType === "sell" && listingType !== "buy") return false;
+
+  const item = String(listing.item ?? "").toLowerCase();
+  if (intent.item_keywords && intent.item_keywords.length) {
+    const hit = intent.item_keywords.some((kw) => item.includes(String(kw).toLowerCase()));
+    if (!hit) return false;
+  }
+
+  const currency = String(listing.currency ?? "").toUpperCase();
+  if (intent.currency && currency && currency !== intent.currency.toUpperCase()) return false;
+
+  const price = Number(listing.price);
+  if (Number.isFinite(price)) {
+    if (intentType === "buy" && typeof intent.max_price === "number" && price > intent.max_price) {
+      return false;
+    }
+    if (intentType === "sell" && typeof intent.min_price === "number" && price < intent.min_price) {
+      return false;
+    }
+  }
+
+  if (intent.condition && intent.condition.length) {
+    const cond = String(listing.condition ?? "").toLowerCase();
+    const ok = intent.condition.some((c) => cond.includes(String(c).toLowerCase()));
+    if (!ok) return false;
+  }
+
+  if (intent.location) {
+    const loc = String(listing.location ?? "").toLowerCase();
+    if (loc && !loc.includes(intent.location.toLowerCase())) return false;
+  }
+
+  return true;
+}
+
+function parseApprovalMessage(body: string): { type: "APPROVAL_REQUEST" | "APPROVAL_RESPONSE"; reason: string } | null {
+  const trimmed = body.trim();
+  if (trimmed.startsWith("APPROVAL_REQUEST")) {
+    return { type: "APPROVAL_REQUEST", reason: trimmed.slice("APPROVAL_REQUEST".length).trim() };
+  }
+  if (trimmed.startsWith("APPROVAL_RESPONSE")) {
+    return { type: "APPROVAL_RESPONSE", reason: trimmed.slice("APPROVAL_RESPONSE".length).trim() };
+  }
+  return null;
+}
+
+function logListingIfPresent(
+  logDir: string,
+  payload: { body: string; ts: string; sender: string; roomId: string; direction: "in" | "out" }
+) {
+  try {
+    const parsed = parseListingMessage(payload.body);
+    if (!parsed) return;
+    const listingLog = path.join(logDir, "listings.jsonl");
+    appendJsonLine(listingLog, {
+      ts: payload.ts,
+      direction: payload.direction,
+      sender: payload.sender,
+      roomId: payload.roomId,
+      type: parsed.type,
+      data: parsed.data,
+      raw: payload.body,
+    });
+  } catch (err: any) {
+    const listingLog = path.join(logDir, "listings.jsonl");
+    appendJsonLine(listingLog, {
+      ts: payload.ts,
+      direction: payload.direction,
+      sender: payload.sender,
+      roomId: payload.roomId,
+      type: "LISTING_CREATE",
+      error: String(err?.message ?? err),
+      raw: payload.body,
+    });
+  }
+}
+
+function logApprovalIfPresent(
+  logDir: string,
+  payload: { body: string; ts: string; sender: string; roomId: string; direction: "in" | "out" }
+) {
+  const parsed = parseApprovalMessage(payload.body);
+  if (!parsed) return;
+  const approvalsLog = path.join(logDir, "approvals.jsonl");
+  appendJsonLine(approvalsLog, {
+    ts: payload.ts,
+    direction: payload.direction,
+    sender: payload.sender,
+    roomId: payload.roomId,
+    type: parsed.type,
+    reason: parsed.reason,
+    raw: payload.body,
+  });
+}
+
+async function runIntake(
+  configPath: string,
+  roomKey: "gossip" | "dm",
+  type: "buy" | "sell",
+  item: string,
+  price: number,
+  currency: string
+) {
+  const { config } = await getClient(configPath);
+  ensureLogDir(config.logDir);
+
+  const questions = [
+    "What condition should it be in? (e.g., good, like new)",
+    "What should be included (accessories/box/charger)?",
+    "Location and shipping preference?",
+    "Any extra notes or must-haves?",
+  ];
+
+  const answers: string[] = [];
+  for (const q of questions) {
+    process.stdout.write(`${q}\n> `);
+    const answer = await new Promise<string>((resolve) => {
+      process.stdin.once("data", (data) => resolve(String(data).trim()));
+    });
+    if (answer) answers.push(answer);
+  }
+
+  const condition = answers[0] || "good";
+  const ship = answers[2] || "included";
+  const location = answers[2] || "unspecified";
+  const notes = answers[3] || answers[1] || "";
+  const listing = buildListingFromAnswers(
+    type,
+    item,
+    price,
+    currency,
+    condition,
+    ship,
+    location,
+    notes
+  );
+  const text = `LISTING_CREATE ${JSON.stringify(listing)}`;
+  await sendMessage(configPath, roomKey, text);
+}
+
+async function sendApproval(
+  configPath: string,
+  roomKey: "gossip" | "dm",
+  decision: "approve" | "decline",
+  note?: string
+) {
+  const reason = note ? ` ${note}` : "";
+  const text = `APPROVAL_RESPONSE ${decision}${reason}`;
+  await sendMessage(configPath, roomKey, text);
+}
+
 function loadMatchFile(matchFile: string): RegExp | null {
   try {
     const raw = fs.readFileSync(matchFile, "utf8");
@@ -107,6 +320,7 @@ function loadMatchFile(matchFile: string): RegExp | null {
 
 async function sendMessage(configPath: string, roomKey: string, text: string) {
   const { client, config } = await getClient(configPath);
+  ensureLogDir(config.logDir);
 
   let roomId = "";
   if (roomKey === "gossip") {
@@ -133,6 +347,21 @@ async function sendMessage(configPath: string, roomKey: string, text: string) {
     { msgtype: "m.text", body: text },
     ""
   );
+  const ts = new Date().toISOString();
+  logListingIfPresent(config.logDir, {
+    body: text,
+    ts,
+    sender: config.userId,
+    roomId,
+    direction: "out",
+  });
+  logApprovalIfPresent(config.logDir, {
+    body: text,
+    ts,
+    sender: config.userId,
+    roomId,
+    direction: "out",
+  });
   console.log(`Sent to ${roomKey}: ${text}`);
 }
 
@@ -222,6 +451,20 @@ async function scriptedSend(configPath: string, roomKey: string, scriptPath: str
     const ts = new Date().toISOString();
     const sender = config.userId;
     appendLog(logPath, `${ts} ${sender} ${roomId} ${trimmed}\n`);
+    logListingIfPresent(config.logDir, {
+      body: trimmed,
+      ts,
+      sender,
+      roomId,
+      direction: "out",
+    });
+    logApprovalIfPresent(config.logDir, {
+      body: trimmed,
+      ts,
+      sender,
+      roomId,
+      direction: "out",
+    });
     console.log(`Sent: ${trimmed}`);
   }
 }
@@ -231,15 +474,18 @@ async function runBridge(
   sessionId: string,
   match?: string,
   matchFile?: string,
+  intentFile?: string,
   roomMode: "gossip" | "dm" | "both" = "both"
 ) {
   const { client, config } = await getClient(configPath);
+  ensureLogDir(config.logDir);
   const openclawCmd = config.openclawCmd ?? process.env.OPENCLAW_CMD ?? "openclaw";
   const startTs = Date.now() - 1000;
   let gossipRoomId = config.gossipRoomId ?? "";
   let dmRoomId = config.dmRoomId ?? "";
 
   const matcher = match ? new RegExp(match, "i") : null;
+  const intent = intentFile ? loadIntentJson(intentFile) : null;
   const debug = process.env.BRIDGE_DEBUG === "1";
   let dmSeen = false;
   let busy = false;
@@ -254,6 +500,7 @@ async function runBridge(
     const body = String(content.body ?? "");
     const sender = String(event.getSender() ?? "unknown");
     const roomId = String(room?.roomId ?? "unknown");
+    const ts = new Date(event.getTs ? event.getTs() : Date.now()).toISOString();
 
     if (sender === config.userId) return;
     const isGossip = roomId === gossipRoomId;
@@ -271,16 +518,39 @@ async function runBridge(
     }
     if (isGossip) {
       if (dmSeen) return;
-      const fileMatcher = matchFile ? loadMatchFile(matchFile) : null;
-      if (matcher && !matcher.test(body)) return;
-      if (fileMatcher && !fileMatcher.test(body)) return;
-      if (!matcher && matchFile && !fileMatcher) return;
+      const listing = parseListingMessage(body);
+      if (intent && listing?.data) {
+        if (!matchesIntent(listing.data, intent)) return;
+      } else {
+        const fileMatcher = matchFile ? loadMatchFile(matchFile) : null;
+        if (matcher && !matcher.test(body)) return;
+        if (fileMatcher && !fileMatcher.test(body)) return;
+        if (!matcher && matchFile && !fileMatcher) return;
+      }
     }
     if (busy) return;
 
+    const listing = isGossip ? parseListingMessage(body) : null;
+    logListingIfPresent(config.logDir, {
+      body,
+      ts,
+      sender,
+      roomId,
+      direction: "in",
+    });
+    logApprovalIfPresent(config.logDir, {
+      body,
+      ts,
+      sender,
+      roomId,
+      direction: "in",
+    });
+
     busy = true;
     const prompt = isGossip
-      ? `GOSSIP MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
+      ? listing?.data
+        ? `GOSSIP LISTING from ${sender}: ${body}\nListing JSON: ${JSON.stringify(listing.data)}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
+        : `GOSSIP MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
       : `DM MESSAGE from ${sender}: ${body}\nReply with one line in this format:\n- DM: <message>\nIf you should not respond, reply exactly with SKIP.`;
 
     try {
@@ -427,11 +697,52 @@ async function main() {
     const sessionId = getArg(args, "session");
     const match = getArg(args, "match");
     const matchFile = getArg(args, "match-file");
+    const intentFile = getArg(args, "intent");
     const room = (getArg(args, "room") ?? "both") as "gossip" | "dm" | "both";
     if (!configPath || !sessionId) {
       throw new Error("--config and --session are required");
     }
-    await runBridge(configPath, sessionId, match ?? undefined, matchFile ?? undefined, room);
+    await runBridge(
+      configPath,
+      sessionId,
+      match ?? undefined,
+      matchFile ?? undefined,
+      intentFile ?? undefined,
+      room
+    );
+    return;
+  }
+
+  if (cmd === "intake") {
+    const configPath = getArg(args, "config");
+    const room = (getArg(args, "room") ?? "gossip") as "gossip" | "dm";
+    const type = (getArg(args, "type") ?? "buy") as "buy" | "sell";
+    const item = getArg(args, "item");
+    const priceRaw = getArg(args, "price");
+    const currency = getArg(args, "currency") ?? "EUR";
+    if (!configPath || !item || !priceRaw) {
+      throw new Error("--config, --item, and --price are required");
+    }
+    const price = Number(priceRaw);
+    if (!Number.isFinite(price)) {
+      throw new Error("--price must be a number");
+    }
+    await runIntake(configPath, room, type, item, price, currency);
+    return;
+  }
+
+  if (cmd === "approve") {
+    const configPath = getArg(args, "config");
+    const room = (getArg(args, "room") ?? "dm") as "gossip" | "dm";
+    const decision = (getArg(args, "decision") ?? "approve") as "approve" | "decline";
+    const note = getArg(args, "note") ?? undefined;
+    if (!configPath) {
+      throw new Error("--config is required");
+    }
+    if (decision !== "approve" && decision !== "decline") {
+      throw new Error("--decision must be approve or decline");
+    }
+    await sendApproval(configPath, room, decision, note);
     return;
   }
 

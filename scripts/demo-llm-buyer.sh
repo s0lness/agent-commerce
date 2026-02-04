@@ -52,16 +52,37 @@ if ! node -e "const a=require('./config/agent_a.json'); const b=require('./confi
   node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json
 fi
 
-node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --room both &
+node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --room both --intent intent/intent_buyer.json &
 BRIDGE_PID=$!
 
 OPENCLAW_CMD="${OPENCLAW_CMD:-openclaw}"
+SENT_LISTING=0
 if command -v "$OPENCLAW_CMD" >/dev/null 2>&1; then
   echo "Pinging OpenClaw session..."
   "$OPENCLAW_CMD" agent --session-id matrix-marketplace --message "Reply with PONG." || true
   echo "Pause 3s so you can confirm in OpenClaw UI..."
   sleep 3
-  "$OPENCLAW_CMD" agent --session-id matrix-marketplace --message "You are the buyer. You will receive prompts that start with 'GOSSIP MESSAGE' or 'DM MESSAGE'. Follow these rules: If a gossip message is about selling a Nintendo handheld/switch, respond with one line 'DM: <message>' showing interest and asking key questions. If DM messages arrive, negotiate to 150 USD shipped with tracked signature; after a Deal Summary, reply with 'DM: Confirmed'. If you should not respond, reply exactly 'SKIP'. Always output exactly one line in the required format." >/dev/null 2>&1 || true
+  "$OPENCLAW_CMD" agent --session-id matrix-marketplace --message "You are the buyer. You will receive prompts that start with 'GOSSIP MESSAGE' or 'DM MESSAGE'. Follow these rules: If you should create a listing, ask up to 3 clarifying questions first (condition, accessories, location/shipping). After you have enough detail, respond with one line in this format: GOSSIP: LISTING_CREATE {\"id\":\"lst_buyer_001\",\"type\":\"buy\",\"item\":\"Nintendo Switch\",\"price\":120,\"currency\":\"EUR\",\"condition\":\"good\",\"ship\":\"included\",\"location\":\"EU\",\"notes\":\"looking for good condition, full working\"}. If a gossip message is about selling a Nintendo handheld/switch, respond with one line 'DM: <message>' showing interest and asking key questions. If DM messages arrive, negotiate to 150 USD shipped with tracked signature; if the counterparty asks for more than 160 USD, respond with 'DM: APPROVAL_REQUEST price above budget: <price>'. After a Deal Summary, reply with 'DM: Confirmed'. If you should not respond, reply exactly 'SKIP'. Always output exactly one line in the required format." >/dev/null 2>&1 || true
+
+  echo "Requesting buyer listing from OpenClaw..."
+  listing_reply="$("$OPENCLAW_CMD" agent --session-id matrix-marketplace --message "Create your BUY listing now. Respond with one line starting with 'GOSSIP:'." || true)"
+  listing_line="$(echo "$listing_reply" | tail -n 1 | tr -d '\r')"
+  if echo "$listing_line" | rg -q "^GOSSIP:"; then
+    listing_body="$(echo "$listing_line" | sed 's/^GOSSIP:[[:space:]]*//')"
+    node dist/agent.js send --config config/agent_b.json --room gossip --text "$listing_body" || true
+    SENT_LISTING=1
+  else
+    echo "OpenClaw did not return a listing. Sending fallback listing."
+    node dist/agent.js send --config config/agent_b.json --room gossip --text \
+      'LISTING_CREATE {"id":"lst_buyer_fallback","type":"buy","item":"Nintendo Switch","price":120,"currency":"EUR","condition":"good","ship":"included","location":"EU"}' || true
+    SENT_LISTING=1
+  fi
+fi
+
+if [ "$SENT_LISTING" -eq 0 ]; then
+  echo "OpenClaw not available. Sending fallback listing."
+  node dist/agent.js send --config config/agent_b.json --room gossip --text \
+    'LISTING_CREATE {"id":"lst_buyer_fallback","type":"buy","item":"Nintendo Switch","price":120,"currency":"EUR","condition":"good","ship":"included","location":"EU"}' || true
 fi
 
 LOG_DIR="logs"

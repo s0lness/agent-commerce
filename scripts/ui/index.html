@@ -19,6 +19,12 @@
 
     <main class="grid">
       <section class="panel">
+        <h2>Listings</h2>
+        <div id="listings" class="listings"></div>
+        <div class="subhead">Approvals</div>
+        <div id="approvals" class="approvals"></div>
+      </section>
+      <section class="panel">
         <h2>Gossip Board</h2>
         <div id="gossipSelected" class="selected"></div>
         <div id="gossip" class="board"></div>
@@ -34,6 +40,8 @@
       const gossipEl = document.getElementById("gossip");
       const dmEl = document.getElementById("dm");
       const rolesEl = document.getElementById("roles");
+      const listingsEl = document.getElementById("listings");
+      const approvalsEl = document.getElementById("approvals");
 
       function parseLog(text) {
         const lines = text.split("\n").filter(Boolean);
@@ -83,6 +91,77 @@
         }
         if (wasAtBottom && el.lastElementChild) {
           el.lastElementChild.scrollIntoView({ block: "end" });
+        }
+      }
+
+      function renderListings(el, listings) {
+        el.innerHTML = "";
+        if (!listings.length) {
+          const empty = document.createElement("div");
+          empty.className = "listing-empty";
+          empty.textContent = "No listings yet.";
+          el.appendChild(empty);
+          return;
+        }
+        const latest = listings
+          .filter((l) => l.type === "LISTING_CREATE" && l.data)
+          .slice(-10)
+          .reverse();
+        for (const entry of latest) {
+          const card = document.createElement("div");
+          const listingType = String(entry.data.type || "").toLowerCase();
+          card.className = `listing-card ${listingType === "buy" ? "buy" : listingType === "sell" ? "sell" : ""}`;
+          const header = document.createElement("div");
+          header.className = "listing-header";
+          const label = listingType === "buy" ? "Want to Buy" : listingType === "sell" ? "Want to Sell" : "Listing";
+          header.textContent = `${label} · ${entry.data.item}`;
+          const badge = document.createElement("span");
+          badge.className = `listing-badge ${listingType === "buy" ? "buy" : listingType === "sell" ? "sell" : ""}`;
+          badge.textContent = listingType === "buy" ? "Buyer Intent" : listingType === "sell" ? "Seller Listing" : "Listing";
+          const meta = document.createElement("div");
+          meta.className = "listing-meta";
+          meta.textContent = `${entry.data.price} ${entry.data.currency} · ${entry.data.condition || "condition?"} · ${entry.data.ship || "ship?"}`;
+          const id = document.createElement("div");
+          id.className = "listing-id";
+          id.textContent = `id: ${entry.data.id}`;
+          const who = document.createElement("div");
+          who.className = "listing-who";
+          who.textContent = `by ${entry.sender}`;
+          card.appendChild(header);
+          card.appendChild(badge);
+          card.appendChild(meta);
+          card.appendChild(id);
+          card.appendChild(who);
+          el.appendChild(card);
+        }
+      }
+
+      function renderApprovals(el, approvals) {
+        el.innerHTML = "";
+        if (!approvals.length) {
+          const empty = document.createElement("div");
+          empty.className = "approval-empty";
+          empty.textContent = "No approvals yet.";
+          el.appendChild(empty);
+          return;
+        }
+        const latest = approvals.slice(-10).reverse();
+        for (const entry of latest) {
+          const row = document.createElement("div");
+          row.className = `approval-row ${entry.type === "APPROVAL_REQUEST" ? "req" : "resp"}`;
+          const label = document.createElement("div");
+          label.className = "approval-label";
+          label.textContent = entry.type.replace("_", " ");
+          const body = document.createElement("div");
+          body.className = "approval-body";
+          body.textContent = entry.reason || entry.raw || "";
+          const meta = document.createElement("div");
+          meta.className = "approval-meta";
+          meta.textContent = `${entry.sender}`;
+          row.appendChild(label);
+          row.appendChild(body);
+          row.appendChild(meta);
+          el.appendChild(row);
         }
       }
 
@@ -196,12 +275,38 @@
         }
       }
 
+      async function fetchListings() {
+        try {
+          const res = await fetch("/listings");
+          const data = await res.json();
+          const listings = Array.isArray(data.listings) ? data.listings : [];
+          renderListings(listingsEl, listings);
+        } catch (e) {
+          renderListings(listingsEl, []);
+        }
+      }
+
+      async function fetchApprovals() {
+        try {
+          const res = await fetch("/approvals");
+          const data = await res.json();
+          const approvals = Array.isArray(data.approvals) ? data.approvals : [];
+          renderApprovals(approvalsEl, approvals);
+        } catch (e) {
+          renderApprovals(approvalsEl, []);
+        }
+      }
+
       gossipEl.dataset.forceBottom = "1";
       dmEl.dataset.forceBottom = "1";
       fetchLogs();
       fetchRoles();
+      fetchListings();
+      fetchApprovals();
       setInterval(fetchLogs, 1000);
       setInterval(fetchRoles, 5000);
+      setInterval(fetchListings, 3000);
+      setInterval(fetchApprovals, 3000);
 
       document.getElementById("resetBtn").addEventListener("click", async () => {
         statusEl.textContent = "Resetting...";

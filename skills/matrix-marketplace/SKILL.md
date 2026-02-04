@@ -44,6 +44,9 @@ To also forward DMs into OpenClaw:
 To use a persistent intent file (one phrase per line):
 `node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --match-file intent/intent.txt`.
 
+To use structured JSON intent matching:
+`node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --intent intent/intent_buyer.json`.
+
 When the user states their buying/selling intent, update the intent file so the bridge can match:
 `npm run intent:set -- "Nintendo Switch" "handheld"`.
 

@@ -1,5 +1,4 @@
 # Agent A gossip
 
 sleep 500
-Selling a retro Nintendo handheld in good condition. DM if interested.
-
+LISTING_CREATE {"id":"lst_scripted_seller","type":"sell","item":"Nintendo Switch","price":120,"currency":"EUR","condition":"good","ship":"included","location":"EU","notes":"retro handheld, good condition"}

@@ -4,7 +4,8 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "npm run build:ui && tsc -p tsconfig.json",
+    "build:ui": "node scripts/build-ui.js",
     "agent": "node dist/agent.js",
     "demo:inner": "npm run build && node scripts/demo.js",
     "demo": "bash scripts/demo-run.sh",
@@ -16,6 +17,13 @@
     "openclaw:start": "bash scripts/openclaw-start.sh",
     "openclaw:check": "bash scripts/openclaw-check.sh",
     "intent:set": "bash scripts/intent-set.sh",
+    "test:protocol": "node scripts/test-protocol.js",
+    "intake": "node dist/agent.js intake",
+    "approve": "node dist/agent.js approve",
+    "openclaw:intake": "bash scripts/openclaw-intake.sh",
+    "telegram:relay": "node scripts/telegram-relay.js",
+    "telegram:relay:setup": "node scripts/telegram-relay-setup.js",
+    "telegram:relay:remove": "node scripts/telegram-relay-remove.js",
     "ui": "node scripts/ui-server.js",
     "start-all": "bash scripts/start-all.sh",
     "reset-all": "bash scripts/reset-all.sh"

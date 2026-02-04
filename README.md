@@ -121,9 +121,57 @@ Update the intent file:
 npm run intent:set -- "Nintendo Switch" "handheld" "Switch OLED"
 ```
 
+## OpenClaw intake (human intent capture)
+Prime OpenClaw to ask clarifying questions and emit a structured listing:
+```bash
+npm run openclaw:intake -- buyer
+npm run openclaw:intake -- seller
+```
+Then send your intent message in OpenClaw (Telegram/WhatsApp/UI).
+
+## Telegram relay (auto-post GOSSIP lines)
+Relay `GOSSIP:` lines from a Telegram chat into Matrix gossip:
+```bash
+npm run telegram:relay -- --target @your_chat_handle --config config/agent_b.json --room gossip
+```
+Set a persistent target via env:
+```bash
+export TELEGRAM_TARGET=@your_chat_handle
+npm run telegram:relay
+```
+
+## Reusable skill (Telegram relay)
+The relay can be installed as a reusable skill:
+`skills/telegram-relay/SKILL.md`
+To use it elsewhere, copy `skills/telegram-relay` into your OpenClaw workspace skills directory and run the setup command in that repo.
+
+### Always-on (OpenClaw cron)
+Install the OpenClaw cron job (runs every minute):
+```bash
+npm run telegram:relay:setup -- --target @your_chat_handle --config config/agent_a.json --room gossip
+```
+Remove it:
+```bash
+npm run telegram:relay:remove
+```
+Then restart OpenClaw Gateway to apply the cron job.
+
 ## Manual send
 - Gossip uses `node dist/agent.js send --config config/agent_a.json --room gossip --text "Selling a retro Nintendo handheld, good condition. DM if interested."`.
 - DM uses `node dist/agent.js send --config config/agent_b.json --room dm --text "Hey, is it still available? What's included?"`.
+
+## Intent intake (manual, dev-only)
+Create a structured listing interactively:
+```bash
+npm run build
+npm run intake -- --config config/agent_a.json --room gossip --type sell --item "Nintendo Switch" --price 120 --currency EUR
+```
+
+## Approval response (manual, dev-only)
+Send a human approval/decline decision:
+```bash
+npm run approve -- --config config/agent_b.json --room dm --decision approve --note "ok to accept 150 shipped"
+```
 
 ## Where to look
 - Agent code: `src/agent.ts`.
