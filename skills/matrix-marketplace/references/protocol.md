@@ -20,7 +20,17 @@
 - `logs/dm.log`
 - `logs/listings.jsonl` (structured LISTING_CREATE entries)
 - `logs/approvals.jsonl` (APPROVAL_REQUEST/APPROVAL_RESPONSE)
+- `logs/deals.jsonl` (DEAL_SUMMARY/CONFIRMED)
 
 ## Approval messages
 - `APPROVAL_REQUEST <reason>`
 - `APPROVAL_RESPONSE approve|decline <optional note>`
+
+## Deal messages
+- `Deal Summary: ...` or `DEAL_SUMMARY ...`
+- Human responds with `APPROVAL_RESPONSE approve|decline` to confirm or reject.
+- Agent sends `CONFIRMED` after approval.
+
+## Guardrails Location
+- Guardrails are enforced in the OpenClaw skill/prompt (LLM-first).
+- The bridge is transport + logging only.

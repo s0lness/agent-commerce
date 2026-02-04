@@ -31,16 +31,6 @@ type AgentConfig = {
 };
 
 type Command = "send" | "setup" | "scripted" | "auth" | "bridge" | "intake" | "approve";
-type IntentSpec = {
-  type: "buy" | "sell";
-  item_keywords?: string[];
-  max_price?: number;
-  min_price?: number;
-  currency?: string;
-  condition?: string[];
-  location?: string;
-};
-
 function getArg(args: string[], name: string): string | null {
   const idx = args.indexOf(`--${name}`);
   if (idx === -1) return null;
@@ -136,57 +126,6 @@ function buildListingFromAnswers(
   };
 }
 
-function loadIntentJson(intentFile: string): IntentSpec | null {
-  try {
-    const raw = fs.readFileSync(intentFile, "utf8");
-    const data = JSON.parse(raw);
-    if (!data || (data.type !== "buy" && data.type !== "sell")) return null;
-    return data as IntentSpec;
-  } catch {
-    return null;
-  }
-}
-
-function matchesIntent(listing: any, intent: IntentSpec): boolean {
-  if (!listing || !intent) return false;
-  const listingType = String(listing.type ?? "").toLowerCase();
-  const intentType = intent.type;
-  if (intentType === "buy" && listingType !== "sell") return false;
-  if (intentType === "sell" && listingType !== "buy") return false;
-
-  const item = String(listing.item ?? "").toLowerCase();
-  if (intent.item_keywords && intent.item_keywords.length) {
-    const hit = intent.item_keywords.some((kw) => item.includes(String(kw).toLowerCase()));
-    if (!hit) return false;
-  }
-
-  const currency = String(listing.currency ?? "").toUpperCase();
-  if (intent.currency && currency && currency !== intent.currency.toUpperCase()) return false;
-
-  const price = Number(listing.price);
-  if (Number.isFinite(price)) {
-    if (intentType === "buy" && typeof intent.max_price === "number" && price > intent.max_price) {
-      return false;
-    }
-    if (intentType === "sell" && typeof intent.min_price === "number" && price < intent.min_price) {
-      return false;
-    }
-  }
-
-  if (intent.condition && intent.condition.length) {
-    const cond = String(listing.condition ?? "").toLowerCase();
-    const ok = intent.condition.some((c) => cond.includes(String(c).toLowerCase()));
-    if (!ok) return false;
-  }
-
-  if (intent.location) {
-    const loc = String(listing.location ?? "").toLowerCase();
-    if (loc && !loc.includes(intent.location.toLowerCase())) return false;
-  }
-
-  return true;
-}
-
 function parseApprovalMessage(body: string): { type: "APPROVAL_REQUEST" | "APPROVAL_RESPONSE"; reason: string } | null {
   const trimmed = body.trim();
   if (trimmed.startsWith("APPROVAL_REQUEST")) {
@@ -194,6 +133,17 @@ function parseApprovalMessage(body: string): { type: "APPROVAL_REQUEST" | "APPRO
   }
   if (trimmed.startsWith("APPROVAL_RESPONSE")) {
     return { type: "APPROVAL_RESPONSE", reason: trimmed.slice("APPROVAL_RESPONSE".length).trim() };
+  }
+  return null;
+}
+
+function parseDealMessage(body: string): { type: "DEAL_SUMMARY" | "CONFIRMED"; text: string } | null {
+  const trimmed = body.trim();
+  if (trimmed.startsWith("Deal Summary:") || trimmed.startsWith("DEAL_SUMMARY")) {
+    return { type: "DEAL_SUMMARY", text: trimmed };
+  }
+  if (trimmed === "Confirmed" || trimmed === "CONFIRMED") {
+    return { type: "CONFIRMED", text: trimmed };
   }
   return null;
 }
@@ -243,6 +193,24 @@ function logApprovalIfPresent(
     roomId: payload.roomId,
     type: parsed.type,
     reason: parsed.reason,
+    raw: payload.body,
+  });
+}
+
+function logDealIfPresent(
+  logDir: string,
+  payload: { body: string; ts: string; sender: string; roomId: string; direction: "in" | "out" }
+) {
+  const parsed = parseDealMessage(payload.body);
+  if (!parsed) return;
+  const dealsLog = path.join(logDir, "deals.jsonl");
+  appendJsonLine(dealsLog, {
+    ts: payload.ts,
+    direction: payload.direction,
+    sender: payload.sender,
+    roomId: payload.roomId,
+    type: parsed.type,
+    text: parsed.text,
     raw: payload.body,
   });
 }
@@ -303,21 +271,6 @@ async function sendApproval(
   await sendMessage(configPath, roomKey, text);
 }
 
-function loadMatchFile(matchFile: string): RegExp | null {
-  try {
-    const raw = fs.readFileSync(matchFile, "utf8");
-    const lines = raw
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith("#"));
-    if (!lines.length) return null;
-    const pattern = lines.map((line) => line.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
-    return new RegExp(pattern, "i");
-  } catch {
-    return null;
-  }
-}
-
 async function sendMessage(configPath: string, roomKey: string, text: string) {
   const { client, config } = await getClient(configPath);
   ensureLogDir(config.logDir);
@@ -356,6 +309,13 @@ async function sendMessage(configPath: string, roomKey: string, text: string) {
     direction: "out",
   });
   logApprovalIfPresent(config.logDir, {
+    body: text,
+    ts,
+    sender: config.userId,
+    roomId,
+    direction: "out",
+  });
+  logDealIfPresent(config.logDir, {
     body: text,
     ts,
     sender: config.userId,
@@ -465,6 +425,13 @@ async function scriptedSend(configPath: string, roomKey: string, scriptPath: str
       roomId,
       direction: "out",
     });
+    logDealIfPresent(config.logDir, {
+      body: trimmed,
+      ts,
+      sender,
+      roomId,
+      direction: "out",
+    });
     console.log(`Sent: ${trimmed}`);
   }
 }
@@ -472,9 +439,6 @@ async function scriptedSend(configPath: string, roomKey: string, scriptPath: str
 async function runBridge(
   configPath: string,
   sessionId: string,
-  match?: string,
-  matchFile?: string,
-  intentFile?: string,
   roomMode: "gossip" | "dm" | "both" = "both"
 ) {
   const { client, config } = await getClient(configPath);
@@ -484,8 +448,6 @@ async function runBridge(
   let gossipRoomId = config.gossipRoomId ?? "";
   let dmRoomId = config.dmRoomId ?? "";
 
-  const matcher = match ? new RegExp(match, "i") : null;
-  const intent = intentFile ? loadIntentJson(intentFile) : null;
   const debug = process.env.BRIDGE_DEBUG === "1";
   let dmSeen = false;
   let busy = false;
@@ -502,7 +464,10 @@ async function runBridge(
     const roomId = String(room?.roomId ?? "unknown");
     const ts = new Date(event.getTs ? event.getTs() : Date.now()).toISOString();
 
-    if (sender === config.userId) return;
+    const isSelf = sender === config.userId;
+    if (isSelf) {
+      return;
+    }
     const isGossip = roomId === gossipRoomId;
     const isDm = roomId === dmRoomId;
     if (!isGossip && !isDm) return;
@@ -518,15 +483,6 @@ async function runBridge(
     }
     if (isGossip) {
       if (dmSeen) return;
-      const listing = parseListingMessage(body);
-      if (intent && listing?.data) {
-        if (!matchesIntent(listing.data, intent)) return;
-      } else {
-        const fileMatcher = matchFile ? loadMatchFile(matchFile) : null;
-        if (matcher && !matcher.test(body)) return;
-        if (fileMatcher && !fileMatcher.test(body)) return;
-        if (!matcher && matchFile && !fileMatcher) return;
-      }
     }
     if (busy) return;
 
@@ -545,13 +501,20 @@ async function runBridge(
       roomId,
       direction: "in",
     });
+    logDealIfPresent(config.logDir, {
+      body,
+      ts,
+      sender,
+      roomId,
+      direction: "in",
+    });
 
     busy = true;
     const prompt = isGossip
       ? listing?.data
         ? `GOSSIP LISTING from ${sender}: ${body}\nListing JSON: ${JSON.stringify(listing.data)}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
         : `GOSSIP MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
-      : `DM MESSAGE from ${sender}: ${body}\nReply with one line in this format:\n- DM: <message>\nIf you should not respond, reply exactly with SKIP.`;
+      : `DM MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\nIf you need human approval (price or terms outside your bounds), reply with:\n- DM: APPROVAL_REQUEST <reason>\nIf you reach an agreement, reply with:\n- DM: DEAL_SUMMARY <summary>\nDo not send CONFIRMED until the human approves (they will reply APPROVAL_RESPONSE approve|decline). If you should not respond, reply exactly with SKIP.`;
 
     try {
       const reply = await new Promise<string>((resolve, reject) => {
@@ -615,6 +578,20 @@ async function runBridge(
         );
         const ts = new Date().toISOString();
         appendLog(path.join(config.logDir, "dm.log"), `${ts} ${config.userId} ${dmRoomId} ${message}\n`);
+        logApprovalIfPresent(config.logDir, {
+          body: message,
+          ts,
+          sender: config.userId,
+          roomId: dmRoomId,
+          direction: "out",
+        });
+        logDealIfPresent(config.logDir, {
+          body: message,
+          ts,
+          sender: config.userId,
+          roomId: dmRoomId,
+          direction: "out",
+        });
         if (debug) console.log(`[bridge] sent dm="${message}"`);
       }
     } catch (err) {
@@ -695,9 +672,6 @@ async function main() {
   if (cmd === "bridge") {
     const configPath = getArg(args, "config");
     const sessionId = getArg(args, "session");
-    const match = getArg(args, "match");
-    const matchFile = getArg(args, "match-file");
-    const intentFile = getArg(args, "intent");
     const room = (getArg(args, "room") ?? "both") as "gossip" | "dm" | "both";
     if (!configPath || !sessionId) {
       throw new Error("--config and --session are required");
@@ -705,9 +679,6 @@ async function main() {
     await runBridge(
       configPath,
       sessionId,
-      match ?? undefined,
-      matchFile ?? undefined,
-      intentFile ?? undefined,
       room
     );
     return;

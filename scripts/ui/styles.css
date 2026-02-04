@@ -221,6 +221,56 @@ body {
   padding: 6px;
 }
 
+.deals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 28vh;
+  overflow: auto;
+  padding: 6px;
+}
+
+.deal-row {
+  border: 1px solid #eadfca;
+  background: #fffaf2;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.deal-row.summary {
+  border-color: #6c5ce7;
+  background: #f3f0ff;
+}
+
+.deal-row.confirmed {
+  border-color: #2d6a4f;
+  background: #e8fff2;
+}
+
+.deal-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+.deal-body {
+  font-size: 12px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.deal-meta {
+  font-size: 10px;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.deal-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px;
+}
 .listing-card {
   border: 1px solid #eadfca;
   background: #fffaf2;

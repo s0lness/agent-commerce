@@ -13,7 +13,7 @@ Run the local Matrix demo and drive buy/sell negotiations using the gossip room 
 2. Ensure rooms exist (gossip + DM) and both agents are running.
 3. Choose a role (seller or buyer) and load the corresponding prompt.
 4. Post a gossip message to advertise intent.
-5. Move negotiation to DM, reach a deal, and confirm.
+5. Move negotiation to DM, reach a deal, request human confirmation, then confirm.
 6. Check logs to verify the full flow.
 
 ## Step 1: Prepare Environment
@@ -29,30 +29,30 @@ Run the local Matrix demo and drive buy/sell negotiations using the gossip room 
 ## Step 3: Gossip Then DM
 - Gossip (public): `node dist/agent.js send --config config/agent_a.json --room gossip --text "<short listing>"`.
 - DM (private): `node dist/agent.js send --config config/agent_b.json --room dm --text "<negotiation message>"`.
-- Keep to one item and end with the Deal Summary + Confirmed flow.
+- Keep to one item and end with the Deal Summary + Confirmed flow (after explicit human approval).
 
 ## Step 4: Listen to Gossip with OpenClaw
 Run the bridge so OpenClaw can react to gossip messages (uses `openclaw agent` for each turn, text-only):
 `node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace`.
 
-Optional filter (regex, case-insensitive):
-`node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --match "nintendo|switch|handheld"`.
-
 To also forward DMs into OpenClaw:
 `node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --room both`.
 
-To use a persistent intent file (one phrase per line):
-`node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --match-file intent/intent.txt`.
-
-To use structured JSON intent matching:
-`node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --intent intent/intent_buyer.json`.
-
-When the user states their buying/selling intent, update the intent file so the bridge can match:
-`npm run intent:set -- "Nintendo Switch" "handheld"`.
+OpenClaw handles intent matching in the skill prompt (the bridge forwards gossip without filtering).
 
 ## Step 5: Verify Logs
 - Gossip log: `logs/gossip.log`
 - DM log: `logs/dm.log`
+- Approvals log: `logs/approvals.jsonl`
+- Deals log: `logs/deals.jsonl`
+
+## Guardrails (OpenClaw-First)
+Business logic lives inside the OpenClaw skill/prompt. The bridge does not enforce negotiation rules.
+
+Use these guardrails in the LLM policy:
+- If price/terms are outside your bounds, send `APPROVAL_REQUEST <reason>`.
+- When agreement is reached, send `DEAL_SUMMARY <summary>`.
+- Do not send `CONFIRMED` until the human replies `APPROVAL_RESPONSE approve` (if they decline, continue negotiating or stop).
 
 ## References
 - Read `AGENTS.md` for the protocol summary and file map.

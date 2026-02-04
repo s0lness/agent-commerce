@@ -84,6 +84,13 @@ function handler(req, res) {
     return;
   }
 
+  if (req.url === "/deals") {
+    const deals = readJsonLines(path.join(LOG_DIR, "deals.jsonl"));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ deals }));
+    return;
+  }
+
   if (req.url === "/styles.css") {
     const css = fs.readFileSync(path.join(ROOT, "styles.css"), "utf8");
     res.writeHead(200, { "content-type": "text/css; charset=utf-8" });

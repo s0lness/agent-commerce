@@ -23,6 +23,8 @@
         <div id="listings" class="listings"></div>
         <div class="subhead">Approvals</div>
         <div id="approvals" class="approvals"></div>
+        <div class="subhead">Deals</div>
+        <div id="deals" class="deals"></div>
       </section>
       <section class="panel">
         <h2>Gossip Board</h2>
@@ -42,6 +44,7 @@
       const rolesEl = document.getElementById("roles");
       const listingsEl = document.getElementById("listings");
       const approvalsEl = document.getElementById("approvals");
+      const dealsEl = document.getElementById("deals");
 
       function parseLog(text) {
         const lines = text.split("\n").filter(Boolean);
@@ -297,16 +300,58 @@
         }
       }
 
+      function renderDeals(el, deals) {
+        el.innerHTML = "";
+        if (!deals.length) {
+          const empty = document.createElement("div");
+          empty.className = "deal-empty";
+          empty.textContent = "No deal summaries yet.";
+          el.appendChild(empty);
+          return;
+        }
+        const latest = deals.slice(-10).reverse();
+        for (const entry of latest) {
+          const row = document.createElement("div");
+          row.className = `deal-row ${entry.type === "DEAL_SUMMARY" ? "summary" : "confirmed"}`;
+          const label = document.createElement("div");
+          label.className = "deal-label";
+          label.textContent = entry.type.replace("_", " ");
+          const body = document.createElement("div");
+          body.className = "deal-body";
+          body.textContent = entry.text || entry.raw || "";
+          const meta = document.createElement("div");
+          meta.className = "deal-meta";
+          meta.textContent = `${entry.sender}`;
+          row.appendChild(label);
+          row.appendChild(body);
+          row.appendChild(meta);
+          el.appendChild(row);
+        }
+      }
+
+      async function fetchDeals() {
+        try {
+          const res = await fetch("/deals");
+          const data = await res.json();
+          const deals = Array.isArray(data.deals) ? data.deals : [];
+          renderDeals(dealsEl, deals);
+        } catch (e) {
+          renderDeals(dealsEl, []);
+        }
+      }
+
       gossipEl.dataset.forceBottom = "1";
       dmEl.dataset.forceBottom = "1";
       fetchLogs();
       fetchRoles();
       fetchListings();
       fetchApprovals();
+      fetchDeals();
       setInterval(fetchLogs, 1000);
       setInterval(fetchRoles, 5000);
       setInterval(fetchListings, 3000);
       setInterval(fetchApprovals, 3000);
+      setInterval(fetchDeals, 3000);
 
       document.getElementById("resetBtn").addEventListener("click", async () => {
         statusEl.textContent = "Resetting...";

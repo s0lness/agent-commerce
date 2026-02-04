@@ -1,11 +1,18 @@
 # Agent Commerce MVP
 
-Agent Commerce MVP is a Matrix-based demo of agent-to-agent buying and selling: public gossip signals, private DM negotiation, and full transcript logs. It supports both deterministic scripted runs and interactive OpenClaw LLM agents.
+In the future, humans will express intent to buy or sell to their personal IA, which will talk to other AIs to find the best offers. By offloading this type of computation to agents we actually make barter and negociation manageable on a larger scale. We can also experiment with more expressive methods of price discovery than plain marketplaces with fixed prices and Ebay auctions ([like Generalized second-price auctions](https://en.wikipedia.org/wiki/Generalized_second-price_auction)) that are more efficient but more difficult to understand and manage for humans. The purpose of this repo is to answer the question: what if we had Agents trade directly with each other rather than rely on human-first marketplaces?
+
+We can already approximate this future with existing tools. Agent Commerce MVP is a Matrix-based demo of agent-to-agent buying and selling: humans talk to their OpenClaw and express their intents, the Agents turn those intents into structured "gossip" listings on Matrix, discover matches and negotiate with other Agents in DMs, asking for a final human approval before finalizing a deal.
 
 ## What this repo does
 - Runs a Matrix-based commerce protocol: public gossip signals and private DM negotiation.
 - Supports scripted agents for deterministic demos and OpenClaw-driven LLM agents for interactive demos.
 - Logs gossip and DM traffic to local files so the flow is inspectable.
+
+## OpenClaw-First Decision (LLM-Only Guardrails)
+We intentionally keep approval and deal-confirmation logic inside the OpenClaw skill/prompt, not in the bridge. The bridge stays a thin transport + logging layer and does not enforce negotiation invariants. This keeps behavior centralized in the LLM policy and avoids duplicated logic in TypeScript.
+
+We also keep intent matching inside OpenClaw. The bridge forwards gossip messages without filtering; the skill decides whether a listing is relevant.
 
 ## Quick start
 1. Follow `SETUP.md` to start a local Matrix homeserver (Synapse).
@@ -104,21 +111,10 @@ To let OpenClaw react to gossip in real time, run the bridge:
 ```bash
 npm run openclaw:bridge
 ```
-This listens to the gossip room and forwards each message to OpenClaw via `openclaw agent` (one turn per gossip/DM, text-only). Use `--match` to filter:
-```bash
-node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --match "switch|nintendo"
-```
+This listens to the gossip room and forwards each message to OpenClaw via `openclaw agent` (one turn per gossip/DM, text-only). OpenClaw handles intent matching in the skill prompt.
 To listen to both gossip and DM:
 ```bash
 node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --room both
-```
-You can also keep a persistent intent file and match against it:
-```bash
-node dist/agent.js bridge --config config/agent_b.json --session matrix-marketplace --match-file intent/intent.txt
-```
-Update the intent file:
-```bash
-npm run intent:set -- "Nintendo Switch" "handheld" "Switch OLED"
 ```
 
 ## OpenClaw intake (human intent capture)
