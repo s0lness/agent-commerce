@@ -11,7 +11,7 @@ Agent Commerce MVP is a Matrix-based demo of agent-to-agent buying and selling: 
 1. Follow `SETUP.md` to start a local Matrix homeserver (Synapse).
 2. Install and build with `npm install` and `npm run build`.
 3. Create rooms with `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`.
-4. Run the agents in two terminals with `node dist/agent.js run --config config/agent_a.json` and `node dist/agent.js run --config config/agent_b.json`.
+4. Use scripted sends or the OpenClaw bridge to drive the demo.
 
 ## Quick local demo (for teammates)
 Prereqs:
@@ -42,16 +42,15 @@ npm run demo:all
 - All-in-one uses `npm run demo`.
 - LLM-buyer demo (scripted seller + LLM buyer):
   - Seller (scripted): `node dist/agent.js scripted --config config/agent_a.json --room gossip --script scripts/agent_a_gossip.script` and `node dist/agent.js scripted --config config/agent_a.json --room dm --script scripts/agent_a_dm.script`
-  - Buyer (LLM): run OpenClaw with the `matrix-marketplace` skill (see below) and run the bridge (`npm run openclaw:bridge`)
-- One-command: `npm run demo:llm-buyer`
+  - Buyer (OpenClaw): run `npm run demo:llm-buyer` (includes OpenClaw ping, bridge, and log reset)
 - LLM-seller demo (scripted buyer + LLM seller):
-  - Seller (LLM): run OpenClaw with the `matrix-marketplace` skill (see below) and run the bridge (`node dist/agent.js bridge --config config/agent_a.json --session matrix-marketplace --room both`)
-  - Buyer (scripted): `node dist/agent.js scripted --config config/agent_b.json --room dm --script scripts/agent_b.script`
-- One-command: `npm run demo:llm-seller`
+  - Seller (OpenClaw): run `npm run demo:llm-seller` (includes OpenClaw ping, bridge, and log reset)
+  - Buyer (scripted): `scripts/agent_b.script`
 
 ## OpenClaw requirement (LLM demos)
 The LLM-buyer and LLM-seller demos assume you are running a local OpenClaw instance from this repo, so it loads the workspace skill at `skills/matrix-marketplace`.
 Start OpenClaw before running `demo:llm-buyer` or `demo:llm-seller` so the bridge can forward messages into the session.
+Each demo also pings OpenClaw at the start so you can confirm it is responding in the UI.
 
 Example OpenClaw prompt (buyer mode):
 ```

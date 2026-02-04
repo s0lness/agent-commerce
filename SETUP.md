@@ -49,15 +49,9 @@ npm install
 npm run build
 ```
 
-## 3) Create rooms and start agents
+## 3) Create rooms
 ```bash
 node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json
-```
-
-Run both agents (separate terminals):
-```bash
-node dist/agent.js run --config config/agent_a.json
-node dist/agent.js run --config config/agent_b.json
 ```
 
 ## 4) Scripted demo (repeatable)

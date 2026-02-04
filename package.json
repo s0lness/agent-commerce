@@ -20,10 +20,7 @@
     "reset-all": "bash scripts/reset-all.sh"
   },
   "dependencies": {
-    "@openai/codex-sdk": "latest",
-    "@anthropic-ai/sdk": "^0.32.0",
-    "matrix-js-sdk": "^40.1.0",
-    "openai": "^4.80.0"
+    "matrix-js-sdk": "^40.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",

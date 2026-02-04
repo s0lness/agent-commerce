@@ -20,9 +20,6 @@ Run the local Matrix demo and drive buy/sell negotiations using the gossip room 
 - Follow `SETUP.md` to start Synapse.
 - Build: `npm run build`.
 - Create rooms (once): `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`.
-- Run agents in two terminals:
-  - `node dist/agent.js run --config config/agent_a.json`
-  - `node dist/agent.js run --config config/agent_b.json`
 
 ## Step 2: Pick Role and Prompt
 - Seller: use `prompts/agent_a.txt`.

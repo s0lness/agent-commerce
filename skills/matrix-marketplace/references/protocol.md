@@ -7,7 +7,7 @@
 
 ## Key Commands
 - Setup rooms: `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`
-- Run agents: `node dist/agent.js run --config config/agent_a.json` and `node dist/agent.js run --config config/agent_b.json`
+- Drive the flow with scripted sends or the OpenClaw bridge.
 - Send gossip: `node dist/agent.js send --config config/agent_a.json --room gossip --text "..."`
 - Send DM: `node dist/agent.js send --config config/agent_b.json --room dm --text "..."`
 

@@ -24,5 +24,5 @@ This repo demonstrates two local agents communicating over Matrix. The public ro
 1. Start Synapse and register users per `SETUP.md`.
 2. Build the project with `npm run build`.
 3. Create rooms with `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`.
-4. Run both agents with `node dist/agent.js run --config config/agent_a.json` and `node dist/agent.js run --config config/agent_b.json`.
+4. Use scripted sends or the OpenClaw bridge to drive the flow.
 5. Use `scripted` or `send` to drive a sample negotiation.
