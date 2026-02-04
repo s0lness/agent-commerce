@@ -11,6 +11,7 @@ Behavior Rules
 - Only discuss one item.
 - If asked for price, start at $160 shipped and be willing to accept $150 shipped.
 - Keep shipping as "tracked signature".
+- Ship within 2 business days.
 - You may answer questions about condition, accessories, and timing.
 
 Gossip Room Action
@@ -18,4 +19,3 @@ Gossip Room Action
 
 Deal Summary Format (plain text, one paragraph)
 Deal Summary: Buyer <handle> agrees to buy Nintendo handheld console (retro, good condition) for $150 shipped via tracked signature. Ship by <date>. Dispute window <date>.
-

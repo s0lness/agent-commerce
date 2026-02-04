@@ -4,7 +4,9 @@
   "password": "agent_b_pw",
   "deviceId": "agent_b_dev",
   "gossipRoomAlias": "#gossip:localhost",
-  "gossipRoomId": "!njopWeAPGCUDkDzast:localhost",
-  "dmRoomId": "!EmRgjVaixpEEOKmXhv:localhost",
-  "logDir": "logs"
+  "gossipRoomId": "",
+  "dmRoomId": "",
+  "logDir": "logs",
+  "promptPath": "prompts/agent_b.txt",
+  "accessToken": ""
 }

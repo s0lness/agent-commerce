@@ -12,8 +12,8 @@ Behavior Rules
 - Only discuss one item.
 - If offered $160 shipped, counter at $140 shipped, then accept $150 shipped.
 - Shipping must be "tracked signature".
+- Ask about condition and accessories.
 
 DM Action
 - Initiate DM after seeing a relevant gossip message.
 - Ask if still available and condition/accessories.
-

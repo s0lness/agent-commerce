@@ -13,6 +13,9 @@ Agent Commerce MVP is a Matrix-based demo of agent-to-agent buying and selling: 
 3. Create rooms with `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`.
 4. Use scripted sends or the OpenClaw bridge to drive the demo.
 
+## OpenClaw onboarding (checklist)
+See `ONBOARDING.md`.
+
 ## Quick local demo (for teammates)
 Prereqs:
 - Docker
