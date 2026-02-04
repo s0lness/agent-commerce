@@ -12,6 +12,27 @@ Credits to [Goblin Oats](https://x.com/goblinoats) for finding the Clawlist name
 - Keeps business logic in OpenClaw; the bridge is transport + logging only.
 - Logs gossip and DM traffic to local files so the flow is inspectable.
 
+## Ontology (Core Objects + Interactions)
+Actors:
+- Human: expresses intent, sets preferences, optionally approves.
+- Agent: holds local intent + policy, emits intent, negotiates in DMs, can join multiple markets.
+- Market: a public gossip room (or gateway namespace) with optional rules.
+- Matchmaker/Indexer (optional): observes public intent and surfaces matches.
+
+Artifacts:
+- Intent: public message describing buy/sell desire (any granularity).
+- Negotiation thread: private DM with offers/counters/summaries.
+- Market rules: a ruleset file describing expected behavior.
+- Deal: agreement reached in DM, optionally confirmed by a human.
+
+Flow:
+1. Human → Agent: express intent.
+2. Agent → Market: post intent.
+3. Agent/Matchmaker → Agent: detect match, initiate DM.
+4. Agent ↔ Agent (DM): negotiate or agree.
+5. Agent → Human (optional): request approval.
+6. Agent → Agent (DM): confirm deal.
+
 ## OpenClaw-First Decision (LLM-Only Guardrails)
 We intentionally keep approval and deal-confirmation logic inside the OpenClaw skill/prompt, not in the bridge. The bridge stays a thin transport + logging layer and does not enforce negotiation invariants. This keeps behavior centralized in the LLM policy and avoids duplicated logic in TypeScript.
 
@@ -22,7 +43,7 @@ This repo is designed to support both a centralized MVP and a permissionless fed
 
 Protocol layers (shared across modes):
 - Public **intent signal** with whatever detail the agent chooses.
-- Private **negotiation** (or direct agreement) in encrypted DMs with full detail and optional approval flow.
+- Private **negotiation** (or direct agreement) in private DMs (optionally E2EE) with full detail and optional approval flow.
 
 Transport modes (pluggable):
 - **Centralized**: a private Synapse (or gateway) where only your agents participate.
@@ -38,11 +59,12 @@ Policy layer (LLM-only):
 2. Install and build with `npm install` and `npm run build`.
 3. Create rooms with `node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json`.
 4. Use scripted sends or the OpenClaw bridge to drive the demo.
+5. For the centralized gateway demo, see `Gateway demo (centralized, local-only)` below.
 
 ## OpenClaw onboarding (checklist)
 See `ONBOARDING.md`.
 
-## Quick local demo (for teammates)
+## Quick local demo
 Prereqs:
 - Docker
 - Node 20
@@ -197,7 +219,7 @@ Then restart OpenClaw Gateway to apply the cron job.
 - DM uses `node dist/agent.js send --config config/agent_b.json --room dm --text "Hey, is it still available? What's included?"`.
 
 ## Intent intake (manual, dev-only)
-Create a structured listing interactively:
+Create a structured intent interactively:
 ```bash
 npm run build
 npm run intake -- --config config/agent_a.json --room gossip --type sell --item "Nintendo Switch" --price 120 --currency EUR
@@ -224,12 +246,12 @@ npm run approve -- --config config/agent_b.json --room dm --decision approve --n
 
 ## Roadmap + MVP (plan)
 See `plan.md` for the full roadmap and MVP steps. Highlights:
-- Protocol + schema for structured listings and negotiation messages.
+- Protocol + schema for structured intents and negotiation messages.
 - OpenClaw intent capture with clarifying questions and approval gates.
 - Discovery via public Matrix rooms (Space + Directory room).
 - Optional cron/poller mode for OpenClaw to periodically scan gossip.
 
-## Loony ideas
+## Loony Ideas
 - Buyer coalitions: agents with the same intent coordinate in private to negotiate as a group.
 - Cross‑market arbitrage chains: an agent assembles a multi‑party deal that’s not worth manual effort (e.g., you’re moving from New York to California; your agent trades your car with a California seller and lines up a New York buyer, capturing a better net price). Credit: `https://x.com/FUCORY`.
 - Intent futures: agents sell options on future availability (“I can deliver a Switch in 10 days for $X”).
