@@ -68,13 +68,18 @@ docker run -d --name element-web --network matrix-local -p 8080:80 \
   vectorim/element-web:latest
 
 if [ ! -d "$REPO_ROOT/node_modules" ]; then
-  docker run --rm -v "$REPO_ROOT:/app" -w /app node:20 npm install
+  docker run --rm -v "$REPO_ROOT:/app" -w /app \
+    --user "$(id -u):$(id -g)" \
+    node:20 npm install
 fi
 
-docker run --rm -v "$REPO_ROOT:/app" -w /app node:20 npm run build
+docker run --rm -v "$REPO_ROOT:/app" -w /app \
+  --user "$(id -u):$(id -g)" \
+  node:20 npm run build
 
 docker run --rm --network container:synapse -v "$REPO_ROOT:/app" \
-  -w /app node:20 node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json
+  -w /app --user "$(id -u):$(id -g)" \
+  node:20 node dist/agent.js setup --config-a config/agent_a.json --config-b config/agent_b.json
 
 mkdir -p logs
 if ! pgrep -f "node scripts/ui-server.js" >/dev/null 2>&1; then
@@ -87,4 +92,5 @@ echo "Element: http://localhost:8080"
 echo "Running demo..."
 
 docker run --rm --network container:synapse -v /home/sylve/agent-commerce:/app \
-  -w /app node:20 npm run demo
+  -w /app --user "$(id -u):$(id -g)" \
+  node:20 npm run demo:inner

@@ -15,6 +15,7 @@
         <div class="status" id="status">Connecting...</div>
       </div>
     </header>
+    <section class="roles" id="roles"></section>
 
     <main class="grid">
       <section class="panel">
@@ -32,6 +33,7 @@
       const statusEl = document.getElementById("status");
       const gossipEl = document.getElementById("gossip");
       const dmEl = document.getElementById("dm");
+      const rolesEl = document.getElementById("roles");
 
       function parseLog(text) {
         const lines = text.split("\n").filter(Boolean);
@@ -153,10 +155,53 @@
         }
       }
 
+      async function fetchRoles() {
+        try {
+          const res = await fetch("/roles");
+          const roles = await res.json();
+          const buyer = roles.buyer || "unknown";
+          const seller = roles.seller || "unknown";
+          const llm = roles.llm || "unknown";
+          const mode = roles.mode || "unknown";
+          rolesEl.innerHTML = `
+            <div class="role-card">
+              <div class="role-label">Buyer</div>
+              <div class="role-value">${buyer}</div>
+            </div>
+            <div class="role-card">
+              <div class="role-label">Seller</div>
+              <div class="role-value">${seller}</div>
+            </div>
+            <div class="role-card highlight">
+              <div class="role-label">LLM Agent</div>
+              <div class="role-value">${llm}</div>
+              <div class="role-mode">${mode}</div>
+            </div>
+          `;
+        } catch (e) {
+          rolesEl.innerHTML = `
+            <div class="role-card">
+              <div class="role-label">Buyer</div>
+              <div class="role-value">unknown</div>
+            </div>
+            <div class="role-card">
+              <div class="role-label">Seller</div>
+              <div class="role-value">unknown</div>
+            </div>
+            <div class="role-card highlight">
+              <div class="role-label">LLM Agent</div>
+              <div class="role-value">unknown</div>
+            </div>
+          `;
+        }
+      }
+
       gossipEl.dataset.forceBottom = "1";
       dmEl.dataset.forceBottom = "1";
       fetchLogs();
+      fetchRoles();
       setInterval(fetchLogs, 1000);
+      setInterval(fetchRoles, 5000);
 
       document.getElementById("resetBtn").addEventListener("click", async () => {
         statusEl.textContent = "Resetting...";

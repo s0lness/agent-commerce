@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "agent": "node dist/agent.js",
-    "demo": "npm run build && node scripts/demo.js",
+    "demo:inner": "npm run build && node scripts/demo.js",
+    "demo": "bash scripts/demo-run.sh",
     "demo:docker": "bash scripts/demo-docker.sh",
     "demo:llm-buyer": "bash scripts/demo-llm-buyer.sh",
     "demo:llm-seller": "bash scripts/demo-llm-seller.sh",

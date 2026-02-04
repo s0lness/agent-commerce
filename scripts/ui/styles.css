@@ -30,6 +30,45 @@ body {
   top: 0;
 }
 
+.roles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px 16px 0 16px;
+}
+
+.role-card {
+  border: 1px solid #eadfca;
+  background: #fffaf2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+.role-card.highlight {
+  border-color: #d35400;
+  background: #fff1db;
+}
+
+.role-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+.role-value {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.role-mode {
+  font-size: 11px;
+  margin-top: 6px;
+  color: #9b5b22;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -195,6 +234,10 @@ body {
 
 @media (max-width: 900px) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roles {
     grid-template-columns: 1fr;
   }
 }

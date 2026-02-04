@@ -4,7 +4,8 @@ const path = require("path");
 
 const ROOT = path.join(__dirname, "ui");
 const LOG_DIR = path.join(__dirname, "..", "logs");
-const PORT = 8090;
+const PORT = Number(process.env.UI_PORT || 8090);
+const HOST = process.env.UI_HOST || "127.0.0.1";
 const RESET_DEMO_DELAY_MS = 800;
 
 function ensureLogs() {
@@ -23,9 +24,17 @@ function readLog(file) {
   }
 }
 
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 ensureLogs();
 
-const server = http.createServer((req, res) => {
+function handler(req, res) {
   if (req.url === "/" || req.url === "/index.html") {
     const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
     res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
@@ -38,6 +47,13 @@ const server = http.createServer((req, res) => {
     const dm = readLog(path.join(LOG_DIR, "dm.log"));
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify({ gossip, dm }));
+    return;
+  }
+
+  if (req.url === "/roles") {
+    const roles = readJson(path.join(LOG_DIR, "roles.json"));
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify(roles || {}));
     return;
   }
 
@@ -71,8 +87,24 @@ const server = http.createServer((req, res) => {
 
   res.writeHead(404);
   res.end("Not found");
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`UI running at http://localhost:${PORT}`);
-});
+const MAX_PORT = Number(process.env.UI_PORT_MAX || 8100);
+
+function listenWithFallback(port) {
+  const server = http.createServer(handler);
+  server.on("error", (err) => {
+    if ((err.code === "EADDRINUSE" || err.code === "EACCES") && port < MAX_PORT) {
+      console.warn(`UI port ${port} unavailable (${err.code}), trying ${port + 1}...`);
+      listenWithFallback(port + 1);
+      return;
+    }
+    console.error("UI failed to start:", err);
+    process.exit(1);
+  });
+  server.listen(port, HOST, () => {
+    console.log(`UI running at http://${HOST}:${port}`);
+  });
+}
+
+listenWithFallback(PORT);
