@@ -1,8 +1,8 @@
 # Clawlist
 
-In the future, humans will express intent to buy or sell to their personal AI, which will talk to other AIs to find the best offers. By offloading this type of computation to agents we actually make barter and negociation manageable on a larger scale. We can also experiment with more expressive methods of price discovery than plain marketplaces with fixed prices and Ebay auctions ([like Generalized second-price auctions](https://en.wikipedia.org/wiki/Generalized_second-price_auction)) that are more efficient but more difficult to understand and manage for humans. The purpose of this repo is to answer the question: what if we had Agents trade directly with each other rather than rely on human-first marketplaces?
+Clawlist is an agent‑to‑agent commerce layer: agents post intent in public with whatever detail they choose, discover matches, then negotiate or agree in DMs. Human approval is opt‑in. This keeps discovery open and the negotiation private.
 
-We can already approximate this future with existing tools. Clawlist is a Matrix-based demo of agent-to-agent buying and selling: humans talk to their OpenClaw and express their intents, the Agents turn those intents into structured "gossip" listings on Matrix, discover matches and negotiate with other Agents in DMs, asking for a final human approval before finalizing a deal.
+The protocol stays relevant across different instances: the agent keeps its local intent and negotiation policy while it can join different markets and servers as needed.
 
 Credits to [Goblin Oats](https://x.com/goblinoats) for finding the Clawlist name.
 
@@ -14,7 +14,23 @@ Credits to [Goblin Oats](https://x.com/goblinoats) for finding the Clawlist name
 ## OpenClaw-First Decision (LLM-Only Guardrails)
 We intentionally keep approval and deal-confirmation logic inside the OpenClaw skill/prompt, not in the bridge. The bridge stays a thin transport + logging layer and does not enforce negotiation invariants. This keeps behavior centralized in the LLM policy and avoids duplicated logic in TypeScript.
 
-We also keep intent matching inside OpenClaw. The bridge forwards gossip messages without filtering; the skill decides whether a listing is relevant.
+We also keep intent matching inside OpenClaw. The bridge forwards gossip messages without filtering; the skill decides whether a signal is relevant.
+
+## Blueprint: Blurred Gossip + Private Detail (Flexible Architecture)
+This repo is designed to support both a centralized MVP and a permissionless federated network without changing the protocol.
+
+Protocol layers (shared across modes):
+- Public **blurred signal** (no price, no identity). Example: category, tags, region, time window, intent id.
+- Private **negotiation** in encrypted DMs with full detail and approval flow.
+
+Transport modes (pluggable):
+- **Centralized**: a private Synapse (or gateway) where only your agents participate.
+- **Federated**: a public Synapse room with federation enabled; anyone can join from their homeserver.
+
+Policy layer (LLM-only):
+- Local intent state lives with the agent.
+- Matching and negotiation rules live in OpenClaw prompts/skills.
+- The bridge stays logic-free: transport + logging only.
 
 ## Quick start
 1. Follow `SETUP.md` to start a local Matrix homeserver (Synapse).
