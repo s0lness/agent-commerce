@@ -105,9 +105,25 @@
         }
         const latest = listings
           .filter((l) => l.type === "LISTING_CREATE" && l.data)
-          .slice(-10)
+          .slice(-50)
           .reverse();
+        const seen = new Set();
+        const unique = [];
         for (const entry of latest) {
+          const id = entry?.data?.id;
+          if (!id) {
+            unique.push(entry);
+            continue;
+          }
+          if (seen.has(id)) continue;
+          seen.add(id);
+          const preferred =
+            entry.direction === "out"
+              ? entry
+              : latest.find((e) => e?.data?.id === id && e.direction === "out") || entry;
+          unique.push(preferred);
+        }
+        for (const entry of unique.slice(0, 10)) {
           const card = document.createElement("div");
           const listingType = String(entry.data.type || "").toLowerCase();
           card.className = `listing-card ${listingType === "buy" ? "buy" : listingType === "sell" ? "sell" : ""}`;
@@ -196,9 +212,9 @@
           }
           const res = await fetch("/logs");
           const data = await res.json();
-          const gossipMessages = parseLog(data.gossip || "").sort((a, b) => a.tsMs - b.tsMs || a.idx - b.idx);
+          const gossipMessages = parseLog(data.gossip || "");
           renderBoard(gossipEl, document.getElementById("gossipSelected"), gossipMessages);
-          const dmMessages = parseLog(data.dm || "").sort((a, b) => a.tsMs - b.tsMs || a.idx - b.idx);
+          const dmMessages = parseLog(data.dm || "");
           renderChat(dmEl, dmMessages);
           statusEl.textContent = "Live";
         } catch (e) {

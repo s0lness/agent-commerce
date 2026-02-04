@@ -72,7 +72,7 @@ if command -v "$OPENCLAW_CMD" >/dev/null 2>&1; then
   echo "Requesting seller listing from OpenClaw..."
   listing_reply="$("$OPENCLAW_CMD" agent --session-id "$SESSION_ID" --message "Create your SELL listing now. Respond with one line starting with 'GOSSIP:'." || true)"
   listing_line="$(echo "$listing_reply" | tail -n 1 | tr -d '\r')"
-  if echo "$listing_line" | rg -q "^GOSSIP:"; then
+  if echo "$listing_line" | rg -q "^GOSSIP:.*LISTING_CREATE"; then
     listing_body="$(echo "$listing_line" | sed 's/^GOSSIP:[[:space:]]*//')"
     node dist/agent.js send --config config/agent_a.json --room gossip --text "$listing_body" || true
     SENT_LISTING=1
@@ -92,12 +92,28 @@ fi
 
 DM_LOG="$LOG_DIR/dm.log"
 touch "$DM_LOG"
+DM_REPLY_TIMEOUT="${DM_REPLY_TIMEOUT:-90}"
+DM_APPROVAL_TIMEOUT="${DM_APPROVAL_TIMEOUT:-120}"
+
+last_seller_body() {
+  tail -n 50 "$DM_LOG" | rg "@agent_a:localhost" | tail -n 1 | awk '{ $1=""; $2=""; $3=""; sub(/^ +/,""); print }'
+}
+
+has_seller_deal_summary() {
+  tail -n 50 "$DM_LOG" | rg -q "@agent_a:localhost .*DEAL_SUMMARY"
+}
+
+seller_requests_approval() {
+  local body
+  body="$(last_seller_body)"
+  echo "$body" | rg -qi "approval|approve|let me confirm|APPROVAL_REQUEST"
+}
 
 wait_for_seller_reply() {
   local start_size
   start_size="$(wc -c <"$DM_LOG")"
   local waited=0
-  local timeout=30
+  local timeout="${1:-$DM_REPLY_TIMEOUT}"
   while [ "$waited" -lt "$timeout" ]; do
     if [ "$(wc -c <"$DM_LOG")" -gt "$start_size" ]; then
       if tail -n 5 "$DM_LOG" | rg -q "@agent_a:localhost"; then
@@ -130,6 +146,18 @@ run_script_line_by_line() {
     fi
     node dist/agent.js send --config config/agent_b.json --room "$room" --text "$trimmed"
     wait_for_seller_reply || true
+    if has_seller_deal_summary; then
+      echo "Seller sent DEAL_SUMMARY; stopping scripted buyer lines."
+      break
+    fi
+    if seller_requests_approval; then
+      echo "Seller requested approval; waiting for follow-up..."
+      wait_for_seller_reply "$DM_APPROVAL_TIMEOUT" || true
+      if seller_requests_approval; then
+        echo "Still awaiting approval follow-up; stopping scripted buyer lines."
+        break
+      fi
+    fi
     sleep 1
   done < "$script_path"
 }

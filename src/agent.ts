@@ -517,8 +517,8 @@ async function runBridge(
     busy = true;
     const prompt = isGossip
       ? listing?.data
-        ? `GOSSIP LISTING from ${sender}: ${body}\nListing JSON: ${JSON.stringify(listing.data)}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
-        : `GOSSIP MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\n- GOSSIP: <message>\nIf you should not respond, reply exactly with SKIP.`
+        ? `GOSSIP LISTING from ${sender}: ${body}\nListing JSON: ${JSON.stringify(listing.data)}\nIf you should respond, reply with one line in this format:\n- DM: <message>\nIf you should not respond, reply exactly with SKIP.`
+        : `GOSSIP MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\nIf you should not respond, reply exactly with SKIP.`
       : `DM MESSAGE from ${sender}: ${body}\nIf you should respond, reply with one line in this format:\n- DM: <message>\nIf you need human approval (price or terms outside your bounds), ask the human in OpenClaw (do NOT send APPROVAL_REQUEST into Matrix). You may reply with:\n- DM: Let me confirm and get back to you.\nIf you reach an agreement, reply with:\n- DM: DEAL_SUMMARY <summary>\nDo not send CONFIRMED until the human approves in OpenClaw (they will reply APPROVAL_RESPONSE approve|decline). If you should not respond, reply exactly with SKIP.`;
 
     try {
