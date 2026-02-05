@@ -89,6 +89,11 @@ npm run demo
 ```
 For the centralized gateway demo, see `RUNBOOK.md`.
 
+## Public market onboarding
+- Join instructions: `JOIN.md`
+- Protocol spec: `PROTOCOL.md`
+- Market rules: `MARKET_RULES.md`
+
 ## OpenClaw onboarding (checklist)
 See `ONBOARDING.md`.
 
