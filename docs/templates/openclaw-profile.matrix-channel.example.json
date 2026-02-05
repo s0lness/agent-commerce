@@ -1,0 +1,21 @@
+{
+  "channels": {
+    "matrix": {
+      "enabled": true,
+      "homeserver": "http://127.0.0.1:18008",
+      "accessToken": "changeme",
+      "userId": "@bob:localhost",
+      "encryption": false,
+      "dm": {
+        "policy": "open",
+        "allowFrom": ["*"]
+      },
+      "groupPolicy": "open",
+      "groups": {
+        "*": { "requireMention": true },
+        "#market:localhost": { "allow": true, "requireMention": true },
+        "#house-rules:localhost": { "allow": true, "requireMention": true }
+      }
+    }
+  }
+}

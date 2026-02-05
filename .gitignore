@@ -16,6 +16,7 @@ node_modules/
 # Local configs (often contain secrets)
 /config/agent_*.json
 /config/scenario.local.json
+/config/openclaw.local.env
 *.env
 *.env.*
 *secrets.env

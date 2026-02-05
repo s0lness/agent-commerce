@@ -18,6 +18,7 @@
     "matrix:up": "npm run build --silent && node dist-tools/matrixRun/matrix-up.js",
     "matrix:bootstrap": "npm run build --silent && node dist-tools/matrixRun/bootstrap-matrix.js",
     "matrix:run:agents": "npm run build --silent && node dist-tools/matrixRun/run-agents-only.js",
+    "matrix:assert:confirmation": "npm run build --silent && node dist-tools/matrixRun/assert-confirmation.js --latest",
     "matrix:run:loop": "npm run build --silent && node dist-tools/matrixRun/run-loop-agents.js",
     "setup:synapse": "npm run build --silent && node dist-tools/setup-synapse.js",
     "create:room": "npm run build --silent && node dist-tools/create-room.js",

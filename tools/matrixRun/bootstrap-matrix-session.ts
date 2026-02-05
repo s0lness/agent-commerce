@@ -113,7 +113,7 @@ async function main() {
   }).catch(() => undefined);
 
   // Post the current house rules (best effort)
-  const rulesPath = process.env.HOUSE_RULES_PATH || "prompts/venues/market.md";
+  const rulesPath = process.env.HOUSE_RULES_PATH || "config/houses/market/rules.md";
   let rulesText = "";
   try {
     rulesText = fs.readFileSync(rulesPath, "utf8").trim();

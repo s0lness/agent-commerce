@@ -7,6 +7,7 @@ This document describes the reproducible **scenario run** harness:
   - `@switch_seller:localhost`
   - `@switch_buyer:localhost`
 - Creates a public market room (`#market:localhost`), invites both bots
+- Creates a rules room (`#house-rules:localhost`) and posts the current venue rules (see `config/houses/`)
 - Starts **two isolated OpenClaw profiles** (one per bot) with the Matrix plugin enabled
 - Injects each agent's mission (seller/buyer)
 - Seeds the market with an initial listing
@@ -18,6 +19,19 @@ This document describes the reproducible **scenario run** harness:
 ```bash
 npm run matrix:run
 ```
+
+## Watch Live
+
+```bash
+npm run matrix:watch
+```
+
+## House Rules Overrides
+
+You can change where rules are read/seeded from:
+
+- `RULES_ROOM_ALIAS` (default: `#house-rules:localhost`)
+- `HOUSE_RULES_PATH` (default: `config/houses/market/rules.md`)
 
 ## Outputs
 

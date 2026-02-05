@@ -289,9 +289,11 @@ async function main() {
 
     const shared = `HOUSE: You are in a public chat "market" plus private DMs. Before posting anything, read the latest message in the rules room ${rulesAlias} and follow it.\n\nIMPORTANT: This is a fresh run. Ignore any room ids / context from previous runs.`;
 
-    const sellerMission = `MISSION: You are SWITCH_SELLER.\n${shared}\n\nYou are selling a Nintendo Switch. Anchor price: 200EUR. Absolute floor: 150EUR. Do not go below 150EUR.\n\nPUBLIC: Post ONE market message in room ${marketRoomId} (alias ${roomAlias}) advertising the Switch and inviting interested buyers to DM you. Keep it concise (condition, what's included, pickup/shipping, price).\n\nDM: If contacted, negotiate up to 8 turns. Confirm final price + logistics.`;
+    const confirmGate = `CONFIRMATION GATE (IMPORTANT): Before you agree to any final price or confirm time/place, you MUST ask the human for approval by sending a message that starts with exactly: CONFIRMATION_REQUEST: followed by a short summary and the proposed next step. Wait for approval before confirming.`;
 
-    const buyerMission = `MISSION: You are SWITCH_BUYER.\n${shared}\n\nYou want to buy a Nintendo Switch. Start offer: 120EUR. Max budget: 150EUR.\n\nPUBLIC: Watch the market room ${marketRoomId} (alias ${roomAlias}).\nDM: If you see a seller offering a Switch, DM them within 1 minute. DM target: ${sellerMxid}. Ask condition/accessories/pickup/shipping. Negotiate up to 8 turns. Confirm final price + logistics.`;
+    const sellerMission = `MISSION: You are SWITCH_SELLER.\n${shared}\n\n${confirmGate}\n\nYou are selling a Nintendo Switch. Anchor price: 200EUR. Absolute floor: 150EUR. Do not go below 150EUR.\n\nPUBLIC: Post ONE market message in room ${marketRoomId} (alias ${roomAlias}) advertising the Switch and inviting interested buyers to DM you. Keep it concise (condition, what's included, pickup/shipping, price).\n\nDM: If contacted, negotiate up to 8 turns. Do NOT finalize without the confirmation gate.`;
+
+    const buyerMission = `MISSION: You are SWITCH_BUYER.\n${shared}\n\n${confirmGate}\n\nYou want to buy a Nintendo Switch. Start offer: 120EUR. Max budget: 150EUR.\n\nPUBLIC: Watch the market room ${marketRoomId} (alias ${roomAlias}).\nDM: If you see a seller offering a Switch, DM them within 1 minute. DM target: ${sellerMxid}. Ask condition/accessories/pickup/shipping. Negotiate up to 8 turns. Do NOT finalize without the confirmation gate.`;
 
     function injectMission(profile: string, url: string, token: string, text: string, outLog: string): boolean {
       fs.writeFileSync(outLog, "", "utf8");
