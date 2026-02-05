@@ -8,8 +8,15 @@ export function ensureLogDir(logDir = DEFAULT_LOG_DIR) {
   fs.mkdirSync(logDir, { recursive: true });
 }
 
-export function logEvent(event: RawEvent, logDir = DEFAULT_LOG_DIR) {
+export function logEvent(
+  event: RawEvent,
+  logDir = DEFAULT_LOG_DIR,
+  redact: "none" | "dm" | "all" = "none"
+) {
   ensureLogDir(logDir);
   const eventsLog = path.join(logDir, "events.jsonl");
-  fs.appendFileSync(eventsLog, JSON.stringify(event) + "\n");
+  const shouldRedact =
+    redact === "all" || (redact === "dm" && event.channel === "dm");
+  const payload = shouldRedact ? { ...event, body: "[redacted]" } : event;
+  fs.appendFileSync(eventsLog, JSON.stringify(payload) + "\n");
 }

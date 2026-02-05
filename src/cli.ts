@@ -23,6 +23,30 @@ function readEvents(logPath: string) {
     .map((line) => JSON.parse(line));
 }
 
+function followEvents(logPath: string) {
+  if (!fs.existsSync(logPath)) {
+    throw new Error(`Log not found: ${logPath}`);
+  }
+  let position = fs.statSync(logPath).size;
+  setInterval(() => {
+    const stats = fs.statSync(logPath);
+    if (stats.size <= position) return;
+    const stream = fs.createReadStream(logPath, { start: position, end: stats.size });
+    let data = "";
+    stream.on("data", (chunk) => {
+      data += chunk.toString("utf8");
+    });
+    stream.on("end", () => {
+      position = stats.size;
+      data
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .forEach((line) => console.log(line));
+    });
+  }, 1000);
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -44,6 +68,13 @@ async function main() {
     const configB = loadConfig(configBPath);
 
     const alias = normalizeAlias(configA.gossip_room_alias) ?? "#gossip:localhost";
+    const aliasDomain = alias.split(":")[1];
+    const userDomain = configA.user_id.split(":")[1];
+    if (aliasDomain && userDomain && aliasDomain !== userDomain) {
+      throw new Error(
+        `gossip_room_alias domain (${aliasDomain}) must match user_id domain (${userDomain})`
+      );
+    }
     const aliasLocalpart = alias.split(":")[0].replace(/^#/, "");
 
     const gossipRoom = await client.createRoom({
@@ -78,6 +109,7 @@ async function main() {
     const configPath = getArg(args, "config");
     const channel = getArg(args, "channel");
     const body = getArg(args, "body");
+    const toArg = getArg(args, "to");
 
     if (!channel || !body) {
       throw new Error("--channel and --body are required");
@@ -101,7 +133,7 @@ async function main() {
     );
 
     const channelKey = channel === "gossip" ? "gossip" : "dm";
-    const to = channelKey === "dm" ? config.user_id : undefined;
+    const to = channelKey === "dm" ? toArg ?? config.dm_recipient : undefined;
     logEvent(
       {
         ts: new Date().toISOString(),
@@ -125,6 +157,7 @@ async function main() {
     const limitRaw = getArg(args, "limit");
     const limit = limitRaw ? Number(limitRaw) : 50;
     if (limitRaw && !Number.isFinite(limit)) throw new Error("--limit must be a number");
+    const follow = getArg(args, "follow") === "1" || getArg(args, "follow") === "true";
 
     let events = readEvents(logPath);
     if (channel) events = events.filter((e) => e.channel === channel);
@@ -134,6 +167,9 @@ async function main() {
 
     const slice = events.slice(Math.max(0, events.length - limit));
     slice.forEach((e) => console.log(JSON.stringify(e)));
+    if (follow) {
+      followEvents(logPath);
+    }
     return;
   }
 

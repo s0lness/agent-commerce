@@ -5,8 +5,12 @@
   "device_id": "AGENTA",
   "gossip_room_alias": "#gossip:localhost",
   "log_dir": "logs",
+  "log_redact": "none",
   "openclaw_url": "http://127.0.0.1:18789/wake",
   "openclaw_token": "changeme",
+  "openclaw_timeout_ms": 5000,
+  "persist_access_token": false,
+  "dm_recipient": "@agent_b:localhost",
   "goals": [
     "i want to buy a nintendo switch for 120€",
     "i want to trade a nintendo switch for pokemon cards"

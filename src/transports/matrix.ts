@@ -2,6 +2,50 @@ import { Action, RawEvent } from "../types";
 import { MessageHandler, Transport } from "../transport";
 import { getClient, ensureJoined } from "../matrix";
 
+type NormalizeArgs = {
+  event: any;
+  room: any;
+  userId: string | null;
+  gossipRoomId: string | null;
+  dmRoomId: string | null;
+};
+
+export function normalizeMatrixEvent({
+  event,
+  room,
+  userId,
+  gossipRoomId,
+  dmRoomId,
+}: NormalizeArgs): RawEvent | null {
+  if (!event || !room) return null;
+  if (event.getType() !== "m.room.message") return null;
+  const content = event.getContent();
+  if (!content || content.msgtype !== "m.text") return null;
+
+  const body = String(content.body ?? "");
+  const sender = String(event.getSender() ?? "unknown");
+  if (userId && sender === userId) return null;
+
+  const roomId = String(room?.roomId ?? "");
+  const channel =
+    roomId === gossipRoomId ? "gossip" : roomId === dmRoomId ? "dm" : null;
+  if (!channel) return null;
+
+  const ts = new Date(event.getTs ? event.getTs() : Date.now()).toISOString();
+  const eventId = event.getId ? event.getId() : undefined;
+
+  return {
+    ts,
+    channel,
+    from: sender,
+    to: channel === "dm" && userId ? userId : undefined,
+    body,
+    transport: "matrix",
+    room_id: roomId || undefined,
+    event_id: eventId || undefined,
+  };
+}
+
 export class MatrixTransport implements Transport {
   private configPath: string;
   private gossipRoomId: string | null = null;
@@ -32,27 +76,14 @@ export class MatrixTransport implements Transport {
 
     client.on("Room.timeline", async (event: any, room: any, toStartOfTimeline: boolean) => {
       if (toStartOfTimeline) return;
-      if (event.getType() !== "m.room.message") return;
-      const content = event.getContent();
-      if (!content || content.msgtype !== "m.text") return;
-
-      const body = String(content.body ?? "");
-      const sender = String(event.getSender() ?? "unknown");
-      if (this.userId && sender === this.userId) return;
-
-      const roomId = String(room?.roomId ?? "");
-      const channel = roomId === this.gossipRoomId ? "gossip" : roomId === this.dmRoomId ? "dm" : null;
-      if (!channel) return;
-
-      const ts = new Date(event.getTs ? event.getTs() : Date.now()).toISOString();
-      const raw: RawEvent = {
-        ts,
-        channel,
-        from: sender,
-        to: channel === "dm" && this.userId ? this.userId : undefined,
-        body,
-        transport: "matrix",
-      };
+      const raw = normalizeMatrixEvent({
+        event,
+        room,
+        userId: this.userId,
+        gossipRoomId: this.gossipRoomId,
+        dmRoomId: this.dmRoomId,
+      });
+      if (!raw) return;
       await onMessage(raw);
     });
 

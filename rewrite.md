@@ -57,3 +57,45 @@ Note: In the OpenClaw-first deployment, OpenClaw runs externally and logs into M
 - Agents can discover matches and initiate conversations without any hard schema.
 - Logs are human-readable and replayable.
 - Adding a new transport does not change agent behavior.
+
+## Quality Improvements (Rating Uplift)
+These are the concrete steps to move the repo from a vibecoded MVP to a durable prototype.
+
+### Tier 1: Immediate, High ROI
+- Add a minimal test suite:
+  - config validation
+  - log redaction behavior
+  - matrix event normalization
+- Safer security defaults:
+  - avoid persisting access tokens by default
+  - document config handling and non-commit guidance
+- Observability:
+  - structured logs with levels
+  - include room IDs and event IDs
+- Formal config schema (Zod or JSON Schema) to fail fast on errors
+
+### Tier 2: Operational Hardening
+- Webhook reliability:
+  - timeouts, bounded retries, and queueing
+- Graceful shutdown:
+  - clean stop on SIGINT/SIGTERM
+  - flush logs and in-flight requests
+- Rate limiting and de-duplication:
+  - avoid event storms and duplicate processing
+- Error hygiene:
+  - clearer CLI errors with actionable messages
+
+### Tier 3: Product Shape
+- Multi-recipient DM routing (per-sender or per-intent, not a single DM room)
+- Transport contract tests with a mock transport
+- Architecture doc and example flows
+- Packaging convenience: `npm run dev`, single `start` entry, and example config templates
+
+## Changes Started (Immediate Fixes)
+- DM logs now record a real recipient (via `--to` or `dm_recipient`).
+- Config validation added (required fields + type checks).
+- JSON Schema added for config (`config/agent.schema.json`).
+- Test suite added (config validation, log redaction, matrix normalization).
+- Optional `persist_access_token` flag to avoid writing tokens to disk.
+- OpenClaw webhook timeout support (`openclaw_timeout_ms`).
+- `setup` now guards against mismatched alias domains.

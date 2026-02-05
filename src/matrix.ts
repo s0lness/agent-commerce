@@ -25,7 +25,9 @@ export async function getClient(configPath: string) {
   config.access_token = loginRes.access_token;
   config.user_id = loginRes.user_id;
   config.device_id = loginRes.device_id;
-  saveConfig(configPath, config);
+  if (config.persist_access_token === true) {
+    saveConfig(configPath, config);
+  }
 
   const client: any = sdk.createClient({
     baseUrl: config.base_url,

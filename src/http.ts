@@ -5,7 +5,8 @@ import { URL } from "url";
 export function postJson(
   url: string,
   body: Record<string, unknown>,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
+  timeoutMs = 5000
 ): Promise<{ status: number; text: string }> {
   return new Promise((resolve, reject) => {
     const target = new URL(url);
@@ -35,6 +36,11 @@ export function postJson(
       }
     );
 
+    if (timeoutMs > 0) {
+      req.setTimeout(timeoutMs, () => {
+        req.destroy(new Error(`Request timed out after ${timeoutMs}ms`));
+      });
+    }
     req.on("error", reject);
     req.write(payload);
     req.end();

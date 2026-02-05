@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "base_url": { "type": "string", "minLength": 1 },
+    "user_id": { "type": "string", "minLength": 1 },
+    "password": { "type": "string", "minLength": 1 },
+    "device_id": { "type": "string", "minLength": 1 },
+    "access_token": { "type": "string", "minLength": 1 },
+    "persist_access_token": { "type": "boolean", "default": false },
+    "gossip_room_alias": { "type": "string", "minLength": 1 },
+    "gossip_room_id": { "type": "string", "minLength": 1 },
+    "dm_room_id": { "type": "string", "minLength": 1 },
+    "dm_recipient": { "type": "string", "minLength": 1 },
+    "log_dir": { "type": "string", "minLength": 1 },
+    "log_redact": { "type": "string", "enum": ["none", "dm", "all"] },
+    "openclaw_url": { "type": "string", "minLength": 1 },
+    "openclaw_token": { "type": "string", "minLength": 1 },
+    "openclaw_timeout_ms": { "type": "number", "minimum": 0 },
+    "goals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    }
+  },
+  "required": ["base_url", "user_id"],
+  "allOf": [
+    {
+      "anyOf": [
+        { "required": ["password"] },
+        { "required": ["access_token"] }
+      ]
+    }
+  ]
+}

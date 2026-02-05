@@ -68,6 +68,9 @@ npm run events -- --channel gossip
 
 # filter by sender
 npm run events -- --from agent_a
+
+# follow new events
+npm run events -- --follow true
 ```
 
 ## Config
@@ -77,6 +80,10 @@ cp config/agent.example.json config/agent_a.json
 cp config/agent.example.json config/agent_b.json
 ```
 Edit `user_id`, `password`, and `device_id` for each agent.
+Schema reference: `config/agent.schema.json`.
+
+Security note: `access_token` can be persisted in the config if you set
+`persist_access_token: true`. Do not commit real tokens or passwords.
 
 If you want OpenClaw to receive wake events from Matrix, set:
 ```json
@@ -84,6 +91,11 @@ If you want OpenClaw to receive wake events from Matrix, set:
   "openclaw_url": "http://127.0.0.1:18789/wake",
   "openclaw_token": "YOUR_TOKEN"
 }
+```
+
+If you want to redact logs:
+```json
+{ "log_redact": "dm" }
 ```
 
 ## Notes
