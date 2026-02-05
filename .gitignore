@@ -1,10 +1,24 @@
+# Node
 node_modules/
-dist/
-logs/
 
-# Local configs (keep example tracked)
-config/*.json
-!config/agent.example.json
+# Build outputs
+/dist/
 
-# OS cruft
-.DS_Store
+# Logs
+/logs/
+
+# Local configs (often contain secrets)
+/config/agent_*.json
+
+# Local run harness artifacts
+clawlist-matrix-run/runs/
+clawlist-matrix-run/out/
+clawlist-matrix-run/synapse-data/
+clawlist-matrix-run/synapse-data2/
+clawlist-matrix-run/.trash/
+
+# Local Synapse (do not commit generated server state / keys)
+synapse/
+
+# Local trash
+.trash/

@@ -42,10 +42,19 @@ npm run setup
 npm run start:agent
 ```
 
+## One-Command Demo Run (local Matrix)
+```bash
+./run-matrix.sh
+```
+
+Notes:
+- This uses the self-contained harness in `clawlist-matrix-run/`.
+- Synapse state + run outputs are written under `clawlist-matrix-run/runs/<run_id>/`.
+
 ## Create a Room (Script)
 ```bash
 # set credentials for room creator
-export MATRIX_USER='@agent_a:home.local'
+export MATRIX_USER='@agent_a:localhost'
 export MATRIX_PASSWORD='changeme'
 
 # create a public gossip room

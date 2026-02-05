@@ -3,7 +3,8 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_DIR="$ROOT_DIR/synapse"
-SERVER_NAME="${SYNAPSE_SERVER_NAME:-home.local}"
+# Default to localhost for local-only testing. Keep it consistent with the repo examples.
+SERVER_NAME="${SYNAPSE_SERVER_NAME:-localhost}"
 
 mkdir -p "$DATA_DIR"
 
