@@ -16,7 +16,7 @@ BUYER_PASS="BuyerPass123!"
 
 TIMEOUT_BIN="$(command -v timeout || true)"
 CURL_MAX_TIME="${CURL_MAX_TIME:-20}"
-CURL_RETRIES="${CURL_RETRIES:-5}"
+CURL_RETRIES="${CURL_RETRIES:-10}"
 
 curl_retry() {
   local args=("$@")
@@ -62,6 +62,13 @@ if [ ! -f "$SYNAPSE_DIR/homeserver.yaml" ]; then
   fi
 fi
 
+# Ensure Synapse container can read/write its data directory
+echo "[bootstrap] fixing synapse data permissions"
+run_timeout docker run --rm \
+  -v "$SYNAPSE_DIR:/data" \
+  --entrypoint /bin/sh \
+  matrixdotorg/synapse:latest -c "chown -R 991:991 /data"
+
 MATRIX_PORT="${MATRIX_PORT:-18008}"
 
 # Start synapse
@@ -81,12 +88,18 @@ run_timeout docker run -d \
 # Wait for HTTP
 
 echo "[bootstrap] waiting for synapse to respond on port ${MATRIX_PORT}"
-for i in {1..60}; do
-  if curl_retry "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/versions" >/dev/null; then
-    break
+stable=0
+for i in {1..120}; do
+  if curl -fsS --max-time 5 "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/versions" >/dev/null; then
+    stable=$((stable + 1))
+    if [ "$stable" -ge 2 ]; then
+      break
+    fi
+  else
+    stable=0
   fi
   sleep 1
-  if [ "$i" -eq 60 ]; then
+  if [ "$i" -eq 120 ]; then
     echo "synapse did not become ready" >&2
     exit 1
   fi
