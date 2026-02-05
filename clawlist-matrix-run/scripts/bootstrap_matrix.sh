@@ -108,11 +108,13 @@ done
 # Create users (idempotent-ish)
 
 echo "[bootstrap] creating users (ignore 'User ID already taken')"
-run_timeout docker exec -i clawlist-synapse register_new_matrix_user \
+# NOTE: don't pass -i here. In some environments (WSL/VS Code terminals) `docker exec -i`
+# can end up in a stopped state, hanging the whole bootstrap.
+run_timeout docker exec clawlist-synapse register_new_matrix_user \
   -c /data/homeserver.yaml http://127.0.0.1:8008 \
   -u "$SELLER_USER" -p "$SELLER_PASS" --no-admin || true
 
-run_timeout docker exec -i clawlist-synapse register_new_matrix_user \
+run_timeout docker exec clawlist-synapse register_new_matrix_user \
   -c /data/homeserver.yaml http://127.0.0.1:8008 \
   -u "$BUYER_USER" -p "$BUYER_PASS" --no-admin || true
 
