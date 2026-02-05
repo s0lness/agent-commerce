@@ -118,6 +118,20 @@ run_timeout docker exec -i clawlist-synapse register_new_matrix_user \
 
 # Login and create room
 
+echo "[bootstrap] waiting for synapse (post-user creation)"
+stable=0
+for i in {1..60}; do
+  if curl -fsS --max-time 5 "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/versions" >/dev/null; then
+    stable=$((stable + 1))
+    if [ "$stable" -ge 2 ]; then
+      break
+    fi
+  else
+    stable=0
+  fi
+  sleep 1
+done
+
 echo "[bootstrap] logging in"
 SELLER_LOGIN=$(curl_retry -X POST "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/v3/login" \
   -H 'Content-Type: application/json' \
@@ -131,6 +145,8 @@ BUYER_TOKEN=$(node -e 'const x=JSON.parse(process.argv[1]); console.log(x.access
 
 if [ -z "$SELLER_TOKEN" ] || [ -z "$BUYER_TOKEN" ]; then
   echo "failed to get access tokens" >&2
+  echo "SELLER_LOGIN=$SELLER_LOGIN" >&2
+  echo "BUYER_LOGIN=$BUYER_LOGIN" >&2
   exit 1
 fi
 
