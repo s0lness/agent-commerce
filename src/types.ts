@@ -9,14 +9,6 @@ export type RawEvent = {
   transport: "matrix";
 };
 
-export type PolicyConfig =
-  | {
-      kind: "none";
-    }
-  | {
-      kind: "basic";
-    };
-
 export type AgentConfig = {
   base_url: string;
   user_id: string;
@@ -27,8 +19,9 @@ export type AgentConfig = {
   gossip_room_id?: string;
   dm_room_id?: string;
   log_dir?: string;
+  openclaw_url?: string;
+  openclaw_token?: string;
   goals: string[];
-  policy?: PolicyConfig;
 };
 
 export type Action = {

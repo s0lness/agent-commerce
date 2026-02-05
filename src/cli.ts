@@ -101,11 +101,13 @@ async function main() {
     );
 
     const channelKey = channel === "gossip" ? "gossip" : "dm";
+    const to = channelKey === "dm" ? config.user_id : undefined;
     logEvent(
       {
         ts: new Date().toISOString(),
         channel: channelKey,
         from: config.user_id,
+        to,
         body,
         transport: "matrix",
       },

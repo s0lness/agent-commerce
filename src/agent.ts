@@ -1,20 +1,26 @@
 import { AgentConfig, RawEvent } from "./types";
-import { decideActions } from "./policy";
 import { logEvent } from "./log";
 import { MatrixTransport } from "./transports/matrix";
 import { loadConfig } from "./config";
+import { postJson } from "./http";
 
 export function startAgent(configPath: string) {
   const config = loadConfig(configPath);
-  const policy = config.policy ?? { kind: "none" };
   const transport = new MatrixTransport(configPath);
   const logDir = config.log_dir ?? "logs";
+  const openclawUrl = config.openclaw_url;
+  const openclawToken = config.openclaw_token;
 
   async function handleEvent(event: RawEvent) {
     logEvent(event, logDir);
-    const actions = await decideActions(config.user_id, config.goals, event, policy);
-    for (const action of actions) {
-      await transport.send(action);
+    if (openclawUrl) {
+      const headers: Record<string, string> = {};
+      if (openclawToken) {
+        headers.Authorization = `Bearer ${openclawToken}`;
+      }
+      postJson(openclawUrl, { event }).catch((err) => {
+        console.error("OpenClaw notify failed:", err?.message ?? err);
+      });
     }
   }
 
