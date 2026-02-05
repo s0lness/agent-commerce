@@ -3,10 +3,13 @@ node_modules/
 
 # Build outputs
 /dist/
+/dist-tools/
 
 # Logs
 /logs/
 /runs/
+/rooms/
+/.local/
 *.log
 
 # Local configs (often contain secrets)
@@ -16,15 +19,9 @@ node_modules/
 *.env.*
 *secrets.env
 
-# Local run harness artifacts
-clawlist-matrix-run/runs/
-clawlist-matrix-run/out/
-clawlist-matrix-run/synapse-data/
-clawlist-matrix-run/synapse-data2/
-clawlist-matrix-run/.trash/
-
 # Local Synapse (do not commit generated server state / keys)
 synapse/
+clawlist-matrix-run/
 
 # Local trash
 .trash/

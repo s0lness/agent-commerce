@@ -30,7 +30,7 @@ Machine A                          Machine B
 ```bash
 npm install
 # Start Synapse (Docker)
-./scripts/setup-synapse.sh
+npm run setup:synapse
 
 # Start Synapse (see your local setup)
 # Create local configs and then create rooms + invite agent B
@@ -44,12 +44,12 @@ npm run start:agent
 
 ## One-Command Demo Run (local Matrix)
 ```bash
-./run-matrix.sh
+npm run matrix:run
 ```
 
 Notes:
-- This uses the self-contained harness in `clawlist-matrix-run/`.
-- Synapse state + run outputs are written under `clawlist-matrix-run/runs/<run_id>/`.
+- This uses the tooling in `tools/matrixRun/`.
+- Run outputs are written under `runs/<run_id>/`.
 
 You can also run the harness through a tracked scenario config:
 ```bash
@@ -77,7 +77,7 @@ export MATRIX_USER='@agent_a:localhost'
 export MATRIX_PASSWORD='changeme'
 
 # create a public gossip room
-./scripts/create-room.sh gossip --public
+npm run create:room -- gossip --public
 ```
 
 ## OpenClaw Integration (External)
@@ -155,18 +155,19 @@ If you want to redact logs:
 - Transport is modular; Matrix is the first adapter.
 
 ## Examples
-- `examples/buy_sell.txt`
-- `examples/barter.txt`
-- `examples/coalition.txt`
+- `docs/examples/buy_sell.txt`
+- `docs/examples/barter.txt`
+- `docs/examples/coalition.txt`
 
 ## Docs
 - `docs/architecture.md`
 - `docs/flows.md`
 - `docs/repo-hygiene.md`
+- `docs/matrix-run.md`
 
 ## Clean Local Workflow
 Keep your local testing artifacts out of commits:
-- Runtime outputs are gitignored (`logs/`, `runs/`, `clawlist-matrix-run/runs/`, Synapse data dirs).
+- Runtime outputs are gitignored (`logs/`, `runs/`, `.local/`).
 - Local secrets/config are gitignored (`config/agent_*.json`, `config/scenario.local.json`, `*.env`).
 
 Install the pre-commit guard once per clone:

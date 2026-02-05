@@ -1,6 +1,6 @@
 # Clawlist Matrix Run Harness (2-agent scenario)
 
-This folder contains a reproducible **scenario run** harness:
+This document describes the reproducible **scenario run** harness:
 
 - Starts a local **Matrix/Synapse** homeserver in Docker
 - Creates two bot users:
@@ -11,13 +11,12 @@ This folder contains a reproducible **scenario run** harness:
 - Injects each agent's mission (seller/buyer)
 - Seeds the market with an initial listing
 - Runs for a fixed duration
-- Exports transcripts (market room + DM room) to `out/`
+- Exports transcripts (market room + DM room) to each run's `out/` folder
 
 ## Run
 
 ```bash
-cd clawlist-matrix-run
-./run.sh
+npm run matrix:run
 ```
 
 ## Outputs
@@ -34,4 +33,4 @@ Each run writes into a timestamped run folder:
 ## Notes
 
 - This is a *scenario run*, not deterministic.
-- If you rerun, it reuses the same synapse data dir unless you delete `synapse-data/`.
+- If you rerun, it reuses local Synapse state unless you delete `.local/matrix-synapse/`.

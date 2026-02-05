@@ -4,14 +4,14 @@ This project keeps a clear boundary between public source and local runtime arti
 
 ## Public Surface (Tracked)
 - `src/`
+- `tools/`
 - `tests/`
 - `docs/`
 - `config/*.example.json`
-- stable scripts under `scripts/`
 
 ## Internal Kitchen (Untracked)
-- runtime logs and artifacts: `logs/`, `runs/`, `clawlist-matrix-run/runs/`
-- local Synapse state: `clawlist-matrix-run/synapse-data/`, `clawlist-matrix-run/synapse-data2/`
+- runtime logs and artifacts: `logs/`, `runs/`
+- local Synapse state: `.local/`, `synapse/`
 - local secrets and machine-specific config: `config/agent_*.json`, `config/scenario.local.json`, `*.env`, `*secrets.env`
 
 ## Local Scenario Workflow
@@ -31,7 +31,7 @@ Install once per clone:
 npm run hooks:install
 ```
 
-What the guard does (`scripts/precommit-check.sh`):
+What the guard does (`tools/precommit-check.ts`):
 - blocks staged files from internal paths
 - scans staged added lines for likely secrets/tokens
 - allows known placeholders like `changeme`
