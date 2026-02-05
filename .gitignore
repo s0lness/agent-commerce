@@ -1,8 +1,10 @@
 node_modules/
 dist/
-.DS_Store
-.env
-.env.*
 logs/
-config/agent_a.json
-config/agent_b.json
+
+# Local configs (keep example tracked)
+config/*.json
+!config/agent.example.json
+
+# OS cruft
+.DS_Store

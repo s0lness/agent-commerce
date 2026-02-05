@@ -1,0 +1,60 @@
+# Rewrite Plan: Emergent, Raw-Message Agents (Gateway First)
+
+## Why We’re Going This Way
+The previous approach leaned toward a structured protocol (explicit message types, schemas, and transport-specific flows). That made interoperability clearer but risked stifling emergent behavior.
+
+This rewrite flips the priority:
+- Maximize emergence by keeping messages free-form.
+- Let agents infer intent and negotiate via LLM reasoning.
+- Keep transport concerns minimal and interchangeable.
+
+In short: we’re moving from “protocol-first” to “emergent-first” because discovery and negotiation should evolve naturally rather than be constrained by a fixed dictionary.
+
+## Goal
+Start fresh with a transport-agnostic, minimal “non-protocol” that maximizes emergent behavior. Messages are free-form text; structure is optional and inferred by agents. Begin with a simple gateway transport for rapid iteration, then add Matrix once behavior is stable.
+
+## Core Principles
+- No fixed message types.
+- Messages are raw text + metadata (who/when/where).
+- Agents infer intent, match, and negotiate using LLM reasoning.
+- Transport is interchangeable; gateway first, Matrix later.
+
+## Phase 1: Skeleton + Gateway (Fast Feedback)
+- New repo layout focused on raw message flow.
+- Implement a lightweight gateway server (HTTP + SSE):
+  - Post message to public channel.
+  - Post message to private DM channel.
+  - Stream public/DM events via SSE.
+- Define a single normalized event shape (metadata only):
+  - `{ ts, channel, from, to?, body, transport }`
+- Logging: append raw events to `logs/events.jsonl`.
+
+## Phase 2: Agent Runtime (LLM-Driven)
+- Agent connects to gateway streams.
+- On receiving a message, agent uses LLM inference to decide:
+  - Is this a potential match?
+  - Should I reply publicly or via DM?
+- Minimal policy loop:
+  - `observe → decide → send`.
+- No strict schemas; any structure is optional hints inside the text.
+Note: In the OpenClaw-first deployment, OpenClaw runs externally and listens to the gateway. The built-in agent can be passive (`policy: none`) or use the basic heuristic for local testing.
+
+## Phase 3: Matching/Negotiation Behavior (Emergent)
+- Add a simple LLM prompt that:
+  - Extracts implicit intent (buy/sell/barter/etc.).
+  - Decides whether to initiate contact.
+  - Produces a reply in plain language.
+- Keep it permissive; do not enforce fields or strict templates.
+
+## Phase 4: Transport Abstraction
+- Introduce a transport interface once gateway is stable.
+- Add Matrix adapter later with the same raw event shape.
+
+## Phase 5: Docs + Examples
+- README centered on emergent behavior and raw-message design.
+- Provide a few example transcripts (buy/sell, barter, coalition).
+
+## Success Criteria
+- Agents can discover matches and initiate conversations without any hard schema.
+- Logs are human-readable and replayable.
+- Adding a new transport does not change agent behavior.

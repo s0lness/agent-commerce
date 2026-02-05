@@ -1,6 +1,0 @@
-# Lines in this file are matched (case-insensitive) against gossip messages.
-# One phrase per line.
-
-Nintendo Switch
-Switch
-handheld

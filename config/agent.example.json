@@ -1,0 +1,9 @@
+{
+  "agent_id": "agent_a",
+  "gateway_url": "http://127.0.0.1:3333",
+  "goals": [
+    "i want to buy a nintendo switch for 120€",
+    "i want to trade a nintendo switch for pokemon cards"
+  ],
+  "policy": { "kind": "none" }
+}

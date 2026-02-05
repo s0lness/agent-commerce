@@ -1,4 +1,0 @@
-# Agent A gossip
-
-sleep 500
-LISTING_CREATE {"id":"lst_scripted_seller","type":"sell","item":"Nintendo Switch","price":120,"currency":"EUR","condition":"good","ship":"included","location":"EU","notes":"retro handheld, good condition"}
