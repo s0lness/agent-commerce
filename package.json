@@ -26,10 +26,10 @@
     "setup": "node dist/cli.js setup --config-a config/agent_a.json --config-b config/agent_b.json",
     "send": "node dist/cli.js send",
     "events": "node dist/cli.js events",
-    "dev:agent": "node src/cli.ts agent --config config/agent.example.json",
-    "dev:send": "node src/cli.ts send",
-    "dev:events": "node src/cli.ts events",
-    "dev:setup": "node src/cli.ts setup --config-a config/agent_a.json --config-b config/agent_b.json"
+    "dev:agent": "npm run build --silent && node dist/cli.js agent --config config/agent.example.json",
+    "dev:send": "npm run build --silent && node dist/cli.js send",
+    "dev:events": "npm run build --silent && node dist/cli.js events",
+    "dev:setup": "npm run build --silent && node dist/cli.js setup --config-a config/agent_a.json --config-b config/agent_b.json"
   },
   "dependencies": {
     "matrix-js-sdk": "^40.1.0"

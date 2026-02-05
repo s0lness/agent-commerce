@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 const ROOT = path.resolve(__dirname, "../");
 const DEFAULT_CONFIG = path.join(ROOT, "config", "scenario.example.json");
 const LOCAL_CONFIG = path.join(ROOT, "config", "scenario.local.json");
-const RUN_SCRIPT = path.join(ROOT, "dist", "tools", "matrixRun", "run.js");
+const RUN_SCRIPT = path.join(ROOT, "dist-tools", "matrixRun", "run.js");
 
 function usage() {
   console.log([
