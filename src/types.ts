@@ -20,6 +20,7 @@ export type AgentConfig = {
   persist_access_token?: boolean;
   gossip_room_alias?: string;
   gossip_room_id?: string;
+  dm_room_alias?: string;
   dm_room_id?: string;
   dm_room_ids?: string[];
   dm_rooms?: Record<string, string>;

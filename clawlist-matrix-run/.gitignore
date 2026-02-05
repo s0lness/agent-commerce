@@ -1,0 +1,10 @@
+# Run artifacts
+/runs/
+/out/
+
+# Synapse state (should live under runs/<run_id>/synapse-data*)
+/synapse-data/
+/synapse-data2/
+
+# Local trash (we move old artifacts here instead of deleting)
+/.trash/

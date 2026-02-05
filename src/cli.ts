@@ -88,6 +88,14 @@ async function main() {
       );
     }
     const aliasLocalpart = alias.split(":")[0].replace(/^#/, "");
+    const dmAlias = normalizeAlias(configA.dm_room_alias) ?? "#dm:localhost";
+    const dmAliasDomain = dmAlias.split(":")[1];
+    if (dmAliasDomain && userDomain && dmAliasDomain !== userDomain) {
+      throw new Error(
+        `dm_room_alias domain (${dmAliasDomain}) must match user_id domain (${userDomain})`
+      );
+    }
+    const dmAliasLocalpart = dmAlias.split(":")[0].replace(/^#/, "");
 
     const gossipRoom = await client.createRoom({
       room_alias_name: aliasLocalpart,
@@ -99,6 +107,8 @@ async function main() {
     await client.invite(gossipRoom.room_id, configB.user_id);
 
     const dmRoom = await client.createRoom({
+      room_alias_name: dmAliasLocalpart,
+      name: "dm",
       is_direct: true,
       invite: [configB.user_id],
     });
@@ -107,6 +117,8 @@ async function main() {
     configB.gossip_room_id = gossipRoom.room_id;
     configA.dm_room_id = dmRoom.room_id;
     configB.dm_room_id = dmRoom.room_id;
+    configA.dm_room_alias = dmAlias;
+    configB.dm_room_alias = dmAlias;
 
     saveConfig(configAPath, configA);
     saveConfig(configBPath, configB);
@@ -133,8 +145,10 @@ async function main() {
     if (!configPath) throw new Error("--config is required");
     const { client, config } = await getClient(configPath);
     let roomId: string | null = null;
+    let roomAlias: string | null = null;
     if (channel === "gossip") {
       roomId = config.gossip_room_id ?? null;
+      roomAlias = config.gossip_room_alias ?? null;
     } else if (channel === "dm") {
       if (toArg && config.dm_rooms && config.dm_rooms[toArg]) {
         roomId = config.dm_rooms[toArg];
@@ -142,7 +156,11 @@ async function main() {
         throw new Error(`dm room missing for recipient ${toArg}`);
       } else {
         roomId = config.dm_room_id ?? null;
+        roomAlias = config.dm_room_alias ?? null;
       }
+    }
+    if (!roomId && roomAlias) {
+      roomId = await ensureJoined(client, roomAlias);
     }
     if (!roomId) throw new Error(`room id missing for ${channel}`);
 

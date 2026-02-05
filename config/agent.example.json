@@ -4,6 +4,7 @@
   "password": "changeme",
   "device_id": "AGENTA",
   "gossip_room_alias": "#gossip:localhost",
+  "dm_room_alias": "#dm:localhost",
   "log_dir": "logs",
   "log_redact": "none",
   "openclaw_url": "http://127.0.0.1:18789/wake",

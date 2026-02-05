@@ -61,6 +61,8 @@ export class MatrixTransport implements Transport {
     const { client, config } = await getClient(this.configPath);
     this.client = client;
     this.userId = config.user_id;
+    const gossipAlias = config.gossip_room_alias ?? null;
+    const dmAlias = config.dm_room_alias ?? null;
     this.gossipRoomId = config.gossip_room_id ?? null;
     const dmRooms = config.dm_rooms ?? {};
     const dmRoomIds = new Set<string>();
@@ -72,14 +74,18 @@ export class MatrixTransport implements Transport {
     this.dmRooms = dmRooms;
     this.dmRoomIds = dmRoomIds;
 
-    if (!this.gossipRoomId) {
-      throw new Error("gossip_room_id is required. Run setup first.");
+    if (!this.gossipRoomId && !gossipAlias) {
+      throw new Error("gossip_room_id or gossip_room_alias is required. Run setup first.");
     }
-    if (this.dmRoomIds.size === 0) {
-      throw new Error("dm_room_id is required. Run setup first.");
+    if (this.dmRoomIds.size === 0 && !dmAlias) {
+      throw new Error("dm_room_id or dm_room_alias is required. Run setup first.");
     }
 
-    await ensureJoined(client, this.gossipRoomId);
+    this.gossipRoomId = await ensureJoined(client, this.gossipRoomId ?? gossipAlias!);
+    if (!this.dmRoomIds.size && dmAlias) {
+      const dmId = await ensureJoined(client, dmAlias);
+      this.dmRoomIds.add(dmId);
+    }
     for (const roomId of this.dmRoomIds) {
       await ensureJoined(client, roomId);
     }
