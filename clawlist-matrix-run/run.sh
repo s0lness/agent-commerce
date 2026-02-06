@@ -143,9 +143,10 @@ profile_state_dir() {
 
 oc() {
   local profile="$1"; shift
+  # Keep env minimal here. In particular, do NOT set OPENCLAW_GATEWAY_PORT to an
+  # empty string: in some environments that can trigger a fallback to the
+  # default port (18789) even when --port is provided.
   OPENCLAW_STATE_DIR="$(profile_state_dir "$profile")" \
-    OPENCLAW_GATEWAY_PORT="" \
-    OPENCLAW_GATEWAY_TOKEN="" \
     "$OPENCLAW" --profile "$profile" "$@"
 }
 
@@ -211,13 +212,16 @@ cleanup() {
 trap cleanup EXIT
 
 # Avoid any inherited env forcing the gateway to pick a different port.
-unset OPENCLAW_GATEWAY_PORT || true
+unset OPENCLAW_GATEWAY_PORT OPENCLAW_GATEWAY_TOKEN || true
 
 echo "[run] starting openclaw gateways"
-oc "$SELLER_PROFILE" gateway run --port "$SELLER_GATEWAY_PORT" --token "$SELLER_GATEWAY_TOKEN" --force --compact --allow-unconfigured >"$SELLER_LOG" 2>&1 &
+# Force port+token in both CLI args and env for maximum determinism.
+OPENCLAW_GATEWAY_PORT="$SELLER_GATEWAY_PORT" OPENCLAW_GATEWAY_TOKEN="$SELLER_GATEWAY_TOKEN" \
+  oc "$SELLER_PROFILE" gateway run --port "$SELLER_GATEWAY_PORT" --token "$SELLER_GATEWAY_TOKEN" --force --compact --allow-unconfigured >"$SELLER_LOG" 2>&1 &
 SELLER_PID=$!
 
-oc "$BUYER_PROFILE" gateway run --port "$BUYER_GATEWAY_PORT" --token "$BUYER_GATEWAY_TOKEN" --force --compact --allow-unconfigured >"$BUYER_LOG" 2>&1 &
+OPENCLAW_GATEWAY_PORT="$BUYER_GATEWAY_PORT" OPENCLAW_GATEWAY_TOKEN="$BUYER_GATEWAY_TOKEN" \
+  oc "$BUYER_PROFILE" gateway run --port "$BUYER_GATEWAY_PORT" --token "$BUYER_GATEWAY_TOKEN" --force --compact --allow-unconfigured >"$BUYER_LOG" 2>&1 &
 BUYER_PID=$!
 
 # Wait for gateways to bind their ports
