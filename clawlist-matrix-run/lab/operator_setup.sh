@@ -15,6 +15,7 @@ ALLOW_FROM_ID="${ALLOW_FROM_ID:-215094483}"
 
 # Matrix config inputs (created by lab/bootstrap.sh)
 source "$ROOT_DIR/.local/bootstrap.env"
+source "$ROOT_DIR/.local/secrets.env" || true
 
 [ -f "$TELEGRAM_TOKEN_FILE" ] || {
   echo "[operator_setup] ERROR: missing Telegram token file: $TELEGRAM_TOKEN_FILE" >&2
@@ -30,11 +31,13 @@ openclaw --profile "$PROFILE" config set --json 'channels.telegram' \
 
 echo "[operator_setup] configured Telegram for profile=$PROFILE (DM allowlist=${ALLOW_FROM_ID})"
 
-# Matrix (reuse the stable market room allow)
-# Note: operator will use the admin account for viewing only if you configure it separately.
-# Here we just enable Matrix channel; you can add a dedicated mxid later.
-openclaw --profile "$PROFILE" config set --json 'channels.matrix' \
-  "{ enabled: true, homeserver: '${HOMESERVER}', encryption: false, groupPolicy: 'open', groups: { '*': { requireMention: true }, '${ROOM_ID}': { allow: true, requireMention: true } } }" \
-  >/dev/null || true
+# Matrix: use a dedicated operator Matrix user (created via operator_matrix_setup.sh)
+./lab/operator_matrix_setup.sh >/dev/null
+# shellcheck disable=SC1090
+source "$ROOT_DIR/.local/secrets.env"
 
-echo "[operator_setup] configured Matrix (homeserver=${HOMESERVER}, requireMention=true)"
+openclaw --profile "$PROFILE" config set --json 'channels.matrix' \
+  "{ enabled: true, homeserver: '${HOMESERVER}', accessToken: '${OPERATOR_TOKEN}', userId: '${OPERATOR_MXID}', encryption: false, dm: { policy: 'open', allowFrom: ['*'] }, groupPolicy: 'open', groups: { '*': { requireMention: true }, '${ROOM_ID}': { allow: true, requireMention: true } } }" \
+  >/dev/null
+
+echo "[operator_setup] configured Matrix userId=${OPERATOR_MXID} (homeserver=${HOMESERVER}, requireMention=true)"
