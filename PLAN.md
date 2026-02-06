@@ -35,29 +35,35 @@ This plan turns the current `clawlist-matrix-run/` “single run” harness into
 ## Checklist
 
 ### Phase 0 — Repo hygiene + secrets safety
-- [ ] Add/update `.gitignore` to ensure these are never committed:
+Status: ✅ done (commit `ef9707c`)
+- [x] Add/update `.gitignore` to ensure these are never committed:
   - `**/secrets.env`
   - `**/*.token`
   - `**/.env`
   - `clawlist-matrix-run/.local/`
   - `clawlist-matrix-run/runs/`
   - any Matrix synapse data dirs (`synapse-data*/`)
-- [ ] Add a short `SECURITY.md` (no secrets, just rules): tokens never committed; use local env files.
-- [ ] Ensure all scripts that write secrets do `umask 077` and `chmod 600`.
+- [x] Add a short `SECURITY.md` (no secrets, just rules): tokens never committed; use local env files.
+- [x] Ensure all scripts that write secrets do `umask 077` and `chmod 600`.
 
 ### Phase 1 — Persistent infra: Synapse + Element Web (local-only)
 Goal: start infra rarely; keep it running.
 
-- [ ] Create `infra/docker-compose.yml` (or rename existing) that runs:
+Status: ✅ done (commit `f40067e`)
+- [x] Create `infra/docker-compose.yml` that runs:
   - Synapse (persisted volume = existing `synapse-data2/`)
-  - Element Web (new)
-- [ ] Bind ports to **127.0.0.1** only (explicitly, e.g. `127.0.0.1:18008:8008`, not `0.0.0.0`).
-- [ ] Add `infra/element-config.json` pointing Element to `http://127.0.0.1:18008`.
-- [ ] Add `lab/up.sh`:
+  - Element Web
+- [x] Bind ports to **127.0.0.1** only (explicitly, e.g. `127.0.0.1:18008:8008`, not `0.0.0.0`).
+- [x] Add `infra/element-config.json` pointing Element to `http://127.0.0.1:18008`.
+- [x] Add `lab/up.sh`:
   - starts compose
   - waits for `/_matrix/client/versions`
   - prints UI URL (expected: Element at `http://127.0.0.1:18080`, Synapse at `http://127.0.0.1:18008`)
-- [ ] Add `lab/down.sh` (optional; should not delete volumes).
+- [x] Add `lab/down.sh` (optional; should not delete volumes).
+
+Notes:
+- Synapse runs as `${UID}:${GID}` in compose to avoid WSL volume permission errors.
+- We enabled Synapse room directory publication locally by adding `room_list_publication_rules: [{action: allow}]` to `synapse-data2/homeserver.yaml` (local-only, gitignored).
 
 Definition of Done:
 - `./lab/up.sh` exits 0.
@@ -67,12 +73,20 @@ Definition of Done:
 ### Phase 2 — Persistent bootstrap (baseline users + stable rooms)
 Goal: stop creating per-run market rooms by default.
 
-- [ ] Add `lab/bootstrap.sh` (idempotent):
+Status: ✅ done (commit `650776e`)
+- [x] Add `lab/bootstrap.sh` (idempotent):
   - ensures synapse is up
   - ensures baseline users exist (e.g. `switch_seller`, `switch_buyer`, plus future)
   - ensures stable room alias exists: `#market:localhost`
   - ensures buyer is joined
   - writes tokens to `clawlist-matrix-run/.local/secrets.env` (gitignored, chmod 600)
+  - writes room metadata to `clawlist-matrix-run/.local/bootstrap.env` (chmod 600)
+  - grants `@admin:localhost` PL=100 in `#market:localhost`
+  - publishes `#market:localhost` to the directory
+
+Notes:
+- Matrix token caching to `.local/secrets.env` was added to avoid Synapse `/login` 429s (commit `2bb1e31`).
+- `bootstrap_matrix.sh` now supports `SYNAPSE_CONTAINER` for the persistent Synapse container name (commit `a4b9b1b`).
 
 Notes:
 - For now, keep easy registration because we’re **local-only**.
@@ -84,14 +98,16 @@ Definition of Done:
 ### Phase 3 — Spawnable agents attached to the lab
 Goal: treat agents as ephemeral processes.
 
-- [ ] Add `lab/spawn_gateway.sh --profile <name> --runId <runId>`:
-  - picks a free port
-  - starts `openclaw --profile <name> gateway run ...` in background
-  - writes logs under `clawlist-matrix-run/runs/<runId>/out/`
-- [ ] Add `lab/connect_matrix.sh --profile <name> --mxid <mxid> --token <token> --room <roomIdOrAlias>`:
-  - sets `channels.matrix` for that profile (based on existing `run.sh` code)
-- [ ] Add `lab/mission.sh --profile <name> --runId <runId> --text "..."` (wrap `openclaw system event`)
-- [ ] Add `lab/seed_market.sh --runId <runId>` to post deterministic starter listings/noise.
+Status: ✅ done (commit `ba0f4b2`)
+- [x] Add `lab/spawn_gateway.sh` (spawns `openclaw --profile <name> gateway run`, writes logs under `runs/<runId>/out/`).
+- [x] Add `lab/connect_matrix.sh` (configures Matrix channel for the profile using `.local/{bootstrap,secrets}.env`).
+- [x] Add `lab/mission.sh` (injects a system event into the profile gateway).
+- [x] Add `lab/seed_market.sh` (posts a deterministic listing into `#market:localhost`).
+- [x] Add `lab/run_scenario_basic.sh` (MVP orchestrator: connect, spawn, mission, seed).
+
+Known issues / next hardening:
+- Need a stronger stop/cleanup story to avoid leaving stray gateways running.
+- Add mention-gating / message-rate circuit breaker to prevent runaway bot loops in `#market`.
 
 Definition of Done:
 - Within 30s of running the scripts, both seller and buyer profiles visibly post into `#market:localhost` (seen in Element).
@@ -99,12 +115,16 @@ Definition of Done:
 ### Phase 4 — Telegram-controlled agent (fresh bot)
 Goal: one agent can be steered by you via Telegram while it participates in Matrix.
 
-- [ ] Create a new Telegram bot via BotFather (token kept private).
+Status: 🟨 in progress
+- [x] Create a new Telegram bot via BotFather (currently: `@clawnessbot`).
 - [ ] Decide the Telegram-controlled profile name (recommended: `operator-bot`).
 - [ ] Configure Telegram channel for that profile in a **local-only config step**:
   - token stored locally (not in repo)
   - DM allowlist restricted to Sylve
 - [ ] Ensure the same profile also has Matrix enabled and is allowed in `#market:localhost`.
+
+Notes:
+- Telegram is currently working for progress pings via the main gateway.
 
 Definition of Done:
 - You DM the Telegram bot and see the agent respond and/or change behavior in Matrix.
