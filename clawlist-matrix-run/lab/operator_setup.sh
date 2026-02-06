@@ -41,3 +41,11 @@ openclaw --profile "$PROFILE" config set --json 'channels.matrix' \
   >/dev/null
 
 echo "[operator_setup] configured Matrix userId=${OPERATOR_MXID} (homeserver=${HOMESERVER}, requireMention=true)"
+
+# Allow the operator (bound to Telegram) to post into Matrix explicitly.
+# This is blocked by default to prevent cross-channel leaks.
+openclaw --profile "$PROFILE" config set --json 'tools.message.crossContext' \
+  '{ allowAcrossProviders: true, marker: { enabled: true, prefix: "[from {channel}] " } }' \
+  >/dev/null || true
+
+echo "[operator_setup] enabled cross-provider messaging for message tool (Telegram → Matrix)"
