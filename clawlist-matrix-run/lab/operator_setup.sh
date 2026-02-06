@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Configure the operator-bot profile to accept Telegram DMs from Sylve and also join Matrix.
+# Secrets:
+# - Telegram bot token must be stored locally in: clawlist-matrix-run/.local/operator.telegram.token
+#   (gitignored). Do NOT commit it.
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+PROFILE="${PROFILE:-operator-bot}"
+TELEGRAM_TOKEN_FILE="${TELEGRAM_TOKEN_FILE:-$ROOT_DIR/.local/operator.telegram.token}"
+ALLOW_FROM_ID="${ALLOW_FROM_ID:-215094483}"
+
+# Matrix config inputs (created by lab/bootstrap.sh)
+source "$ROOT_DIR/.local/bootstrap.env"
+
+[ -f "$TELEGRAM_TOKEN_FILE" ] || {
+  echo "[operator_setup] ERROR: missing Telegram token file: $TELEGRAM_TOKEN_FILE" >&2
+  echo "[operator_setup] Create it locally, e.g.:" >&2
+  echo "[operator_setup]   umask 077; mkdir -p $ROOT_DIR/.local; echo '<BOT_TOKEN>' > $TELEGRAM_TOKEN_FILE; chmod 600 $TELEGRAM_TOKEN_FILE" >&2
+  exit 1
+}
+
+# Telegram (DM allowlist only)
+openclaw --profile "$PROFILE" config set --json 'channels.telegram' \
+  "{ enabled: true, tokenFile: '${TELEGRAM_TOKEN_FILE}', dmPolicy: 'allowlist', allowFrom: ['${ALLOW_FROM_ID}'], groupPolicy: 'disabled' }" \
+  >/dev/null
+
+echo "[operator_setup] configured Telegram for profile=$PROFILE (DM allowlist=${ALLOW_FROM_ID})"
+
+# Matrix (reuse the stable market room allow)
+# Note: operator will use the admin account for viewing only if you configure it separately.
+# Here we just enable Matrix channel; you can add a dedicated mxid later.
+openclaw --profile "$PROFILE" config set --json 'channels.matrix' \
+  "{ enabled: true, homeserver: '${HOMESERVER}', encryption: false, groupPolicy: 'open', groups: { '*': { requireMention: true }, '${ROOM_ID}': { allow: true, requireMention: true } } }" \
+  >/dev/null || true
+
+echo "[operator_setup] configured Matrix (homeserver=${HOMESERVER}, requireMention=true)"
