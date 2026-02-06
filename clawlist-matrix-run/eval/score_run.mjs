@@ -36,8 +36,11 @@ function bodyOf(e) {
 }
 
 function parseEuroPrice(text) {
-  // naive: finds first integer like 150 or 150€
-  const m = text.match(/(?:\b|\s)(\d{2,4})\s*€?/);
+  // Keep this conservative to avoid matching RUN_ID years like 2026.
+  // We accept:
+  // - 2-3 digit numbers (e.g. 120, 150, 200)
+  // - optionally followed by € / eur / euros
+  const m = text.toLowerCase().match(/(?:^|[^0-9])(\d{2,3})\s*(€|eur|euros)?\b/);
   if (!m) return null;
   const n = Number(m[1]);
   if (!Number.isFinite(n)) return null;

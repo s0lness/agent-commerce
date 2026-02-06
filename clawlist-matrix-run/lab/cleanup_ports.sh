@@ -25,7 +25,7 @@ for port in "${arr[@]}"; do
 
   # wait briefly for the socket to go away
   for _ in {1..20}; do
-    if ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}\\b"; then
+    if ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}([[:space:]]|$)"; then
       sleep 0.1
     else
       break
@@ -37,7 +37,7 @@ sleep 0.5
 
 # Report
 for port in "${arr[@]}"; do
-  if ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}\\b"; then
+  if ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}([[:space:]]|$)"; then
     echo "[cleanup_ports] WARN: port $port still in use"
   else
     echo "[cleanup_ports] port $port: free"

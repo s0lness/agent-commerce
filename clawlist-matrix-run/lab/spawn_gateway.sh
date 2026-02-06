@@ -19,7 +19,9 @@ TOKEN="${TOKEN:-token-${PROFILE}}"
 
 port_in_use() {
   local port="$1"
-  ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}\\b" && return 0
+  # NOTE: grep -E does NOT support \b as word-boundary (it matches backspace).
+  # Use an explicit delimiter instead.
+  ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}([[:space:]]|$)" && return 0
   return 1
 }
 
@@ -51,16 +53,27 @@ echo "$PORT" >"$OUT_DIR/gateway_${PROFILE}.port"
 
 echo "[spawn_gateway] pid=$PID"
 
-# Wait briefly for the port to bind; if it doesn't, surface the log and fail.
-for i in {1..50}; do
-  if port_in_use "$PORT"; then
-    echo "$PID" >"$PID_FILE"
+pid_from_log() {
+  # Example line: listening on ws://127.0.0.1:18791 (PID 55556)
+  sed -n 's/.*listening on ws:\/\/127\.0\.0\.1:'"$PORT"' (PID \([0-9]\+\)).*/\1/p' "$LOG" | tail -n 1
+}
+
+# Wait briefly for readiness by watching the gateway log.
+# `ss` polling can be racy on some WSL builds.
+for i in {1..150}; do
+  if grep -q "listening on ws://127.0.0.1:${PORT} (PID" "$LOG" 2>/dev/null; then
+    real_pid=$(pid_from_log || true)
+    if [ -n "$real_pid" ]; then
+      echo "$real_pid" >"$PID_FILE"
+    else
+      echo "$PID" >"$PID_FILE"
+    fi
     exit 0
   fi
   sleep 0.2
 done
 
-echo "[spawn_gateway] ERROR: gateway did not bind port $PORT (see $LOG)" >&2
+echo "[spawn_gateway] ERROR: gateway did not become ready on port $PORT (see $LOG)" >&2
 # best-effort cleanup
 kill "$PID" >/dev/null 2>&1 || true
 exit 1
