@@ -17,8 +17,10 @@ BOOTSTRAP_MODE="${BOOTSTRAP_MODE:-full}" # full|agents|up
 
 MATRIX_RUN_ID="${MATRIX_RUN_ID:-}" # optional; used for per-run room alias
 
+SYNAPSE_CONTAINER="${SYNAPSE_CONTAINER:-clawlist-synapse}"
+
 container_running() {
-  docker ps --format '{{.Names}}' | grep -qx 'clawlist-synapse'
+  docker ps --format '{{.Names}}' | grep -qx "${SYNAPSE_CONTAINER}"
 }
 
 ensure_synapse_config() {
@@ -48,16 +50,16 @@ start_synapse_if_needed() {
 
   if container_running; then
     if [ "$MATRIX_REUSE" = "1" ]; then
-      echo "[bootstrap] synapse already running (reuse=1)"
+      echo "[bootstrap] synapse already running (reuse=1) container=${SYNAPSE_CONTAINER}"
       return 0
     fi
-    echo "[bootstrap] replacing existing synapse container (reuse=0)"
-    docker rm -f clawlist-synapse >/dev/null 2>&1 || true
+    echo "[bootstrap] replacing existing synapse container (reuse=0) container=${SYNAPSE_CONTAINER}"
+    docker rm -f "${SYNAPSE_CONTAINER}" >/dev/null 2>&1 || true
   fi
 
-  echo "[bootstrap] starting synapse on port ${MATRIX_PORT}"
+  echo "[bootstrap] starting synapse on port ${MATRIX_PORT} (container=${SYNAPSE_CONTAINER})"
   docker run -d \
-    --name clawlist-synapse \
+    --name "${SYNAPSE_CONTAINER}" \
     -p "${MATRIX_PORT}:8008" \
     -e SYNAPSE_SERVER_NAME=localhost \
     -e SYNAPSE_REPORT_STATS=no \
@@ -79,26 +81,65 @@ wait_for_synapse() {
 
 create_users() {
   echo "[bootstrap] creating users (ignore 'User ID already taken')"
-  docker exec -i clawlist-synapse register_new_matrix_user \
+  docker exec -i "${SYNAPSE_CONTAINER}" register_new_matrix_user \
     -c /data/homeserver.yaml http://127.0.0.1:8008 \
     -u "$SELLER_USER" -p "$SELLER_PASS" --no-admin || true
 
-  docker exec -i clawlist-synapse register_new_matrix_user \
+  docker exec -i "${SYNAPSE_CONTAINER}" register_new_matrix_user \
     -c /data/homeserver.yaml http://127.0.0.1:8008 \
     -u "$BUYER_USER" -p "$BUYER_PASS" --no-admin || true
 }
 
 login() {
   echo "[bootstrap] logging in"
+
+  local base="http://127.0.0.1:${MATRIX_PORT}"
+
+  # Synapse can rate-limit rapid repeated logins during dev runs.
+  # Handle 429 with a short exponential backoff.
+  login_one() {
+    local user="$1" pass="$2" label="$3"
+    local payload
+    payload='{"type":"m.login.password","identifier":{"type":"m.id.user","user":"'"${user}"'"},"password":"'"${pass}"'"}'
+
+    local attempt=1 max_attempts=6 sleep_s=1
+    local tmp
+    tmp="$(mktemp)"
+    while [ "$attempt" -le "$max_attempts" ]; do
+      local code
+      code=$(curl -sS -o "$tmp" -w "%{http_code}" -X POST "${base}/_matrix/client/v3/login" \
+        -H 'Content-Type: application/json' \
+        -d "$payload" || true)
+
+      if [ "$code" = "200" ]; then
+        cat "$tmp"
+        rm -f "$tmp"
+        return 0
+      fi
+
+      if [ "$code" = "429" ]; then
+        echo "[bootstrap] ${label} login rate-limited (429). retrying in ${sleep_s}s (attempt ${attempt}/${max_attempts})" >&2
+        sleep "$sleep_s"
+        sleep_s=$((sleep_s * 2))
+        attempt=$((attempt + 1))
+        continue
+      fi
+
+      echo "[bootstrap] ${label} login failed (http ${code}). body:" >&2
+      cat "$tmp" >&2 || true
+      rm -f "$tmp"
+      return 1
+    done
+
+    echo "[bootstrap] ${label} login failed after ${max_attempts} attempts (still rate-limited)" >&2
+    cat "$tmp" >&2 || true
+    rm -f "$tmp"
+    return 1
+  }
+
   local seller_login buyer_login
-
-  seller_login=$(curl -fsS -X POST "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/v3/login" \
-    -H 'Content-Type: application/json' \
-    -d '{"type":"m.login.password","identifier":{"type":"m.id.user","user":"'"$SELLER_USER"'"},"password":"'"$SELLER_PASS"'"}')
-
-  buyer_login=$(curl -fsS -X POST "http://127.0.0.1:${MATRIX_PORT}/_matrix/client/v3/login" \
-    -H 'Content-Type: application/json' \
-    -d '{"type":"m.login.password","identifier":{"type":"m.id.user","user":"'"$BUYER_USER"'"},"password":"'"$BUYER_PASS"'"}')
+  seller_login="$(login_one "$SELLER_USER" "$SELLER_PASS" seller)"
+  buyer_login="$(login_one "$BUYER_USER" "$BUYER_PASS" buyer)"
 
   SELLER_TOKEN=$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x.access_token||"")' "$seller_login")
   BUYER_TOKEN=$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x.access_token||"")' "$buyer_login")
