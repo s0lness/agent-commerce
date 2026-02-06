@@ -22,6 +22,15 @@ for port in "${arr[@]}"; do
     continue
   fi
   kill_pid "$pid" "$port"
+
+  # wait briefly for the socket to go away
+  for _ in {1..20}; do
+    if ss -ltnH 2>/dev/null | grep -Eq "[:\]]${port}\\b"; then
+      sleep 0.1
+    else
+      break
+    fi
+  done
 done
 
 sleep 0.5
