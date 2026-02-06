@@ -35,6 +35,16 @@ echo "[operator_setup] configured Telegram for profile=$PROFILE (DM allowlist=${
 OPERATOR_MODEL="${OPERATOR_MODEL:-anthropic/claude-sonnet-4-5}"
 openclaw --profile "$PROFILE" config set agents.defaults.model.primary "$OPERATOR_MODEL" >/dev/null 2>&1 || true
 
+# Copy auth profiles from main agent (needed for Anthropic API key)
+MAIN_AUTH_FILE="$HOME/.openclaw/agents/main/agent/auth-profiles.json"
+OPERATOR_AUTH_DIR="$HOME/.openclaw-${PROFILE}/agents/main/agent"
+OPERATOR_AUTH_FILE="$OPERATOR_AUTH_DIR/auth-profiles.json"
+if [ -f "$MAIN_AUTH_FILE" ] && [ ! -f "$OPERATOR_AUTH_FILE" ]; then
+  mkdir -p "$OPERATOR_AUTH_DIR"
+  cp "$MAIN_AUTH_FILE" "$OPERATOR_AUTH_FILE"
+  echo "[operator_setup] copied auth profiles from main agent"
+fi
+
 # Matrix: use a dedicated operator Matrix user (created via operator_matrix_setup.sh)
 ./lab/operator_matrix_setup.sh >/dev/null
 # shellcheck disable=SC1090
