@@ -66,5 +66,8 @@ sleep "$DURATION_SEC" || true
 ./lab/export_run.sh "$RUN_ID" || true
 ./lab/score.sh "$RUN_ID" || true
 
+# Convenience pointer
+ln -sfn "$ROOT_DIR/runs/$RUN_ID" "$ROOT_DIR/runs/latest" || true
+
 echo "[run_scenario] done: scenario=$SCENARIO run_id=$RUN_ID"
 echo "[run_scenario] summary: $ROOT_DIR/runs/$RUN_ID/out/summary.json"

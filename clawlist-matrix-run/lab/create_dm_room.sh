@@ -9,6 +9,8 @@ cd "$ROOT_DIR"
 source "$ROOT_DIR/.local/bootstrap.env"
 source "$ROOT_DIR/.local/secrets.env"
 
+ADMIN_MXID="${ADMIN_MXID:-@admin:localhost}"
+
 HS="${HOMESERVER:-http://127.0.0.1:18008}"
 RUN_ID="${RUN_ID:-${1:-}}"
 [ -n "$RUN_ID" ] || { echo "usage: create_dm_room.sh <runId>" >&2; exit 2; }
@@ -17,7 +19,8 @@ OUT_DIR="$ROOT_DIR/runs/$RUN_ID/out"
 mkdir -p "$OUT_DIR"
 META_JSON="$OUT_DIR/meta.json"
 
-# Create a private room, invite buyer, join buyer.
+# Create a private room and invite buyer + admin (so you can watch in Element).
+# Note: because this is local-only, we default to inviting @admin:localhost.
 create=$(curl -fsS -X POST "$HS/_matrix/client/v3/createRoom" \
   -H "Authorization: Bearer $SELLER_TOKEN" \
   -H 'Content-Type: application/json' \
@@ -25,18 +28,25 @@ create=$(curl -fsS -X POST "$HS/_matrix/client/v3/createRoom" \
     "preset":"private_chat",
     "name":"dm-'"$RUN_ID"'",
     "topic":"clawlist dm run '"$RUN_ID"'",
-    "invite":["'"$BUYER_MXID"'"],
+    "invite":["'"$BUYER_MXID"'","'"$ADMIN_MXID"'"],
     "is_direct": true
   }')
 
 DM_ROOM_ID=$(node -e 'const x=JSON.parse(process.argv[1]); process.stdout.write(x.room_id||"")' "$create")
 [ -n "$DM_ROOM_ID" ] || { echo "[create_dm_room] ERROR: failed to create room: $create" >&2; exit 1; }
 
-# Ask buyer to join (best-effort)
+# Ask buyer + admin to join (best-effort)
 curl -fsS -X POST "$HS/_matrix/client/v3/rooms/${DM_ROOM_ID}/join" \
   -H "Authorization: Bearer $BUYER_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{}' >/dev/null || true
+
+if [ -n "${ADMIN_TOKEN:-}" ]; then
+  curl -fsS -X POST "$HS/_matrix/client/v3/rooms/${DM_ROOM_ID}/join" \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H 'Content-Type: application/json' \
+    -d '{}' >/dev/null || true
+fi
 
 # Write/merge meta.json
 startedAt="$(date -u +%Y-%m-%dT%H:%M:%SZ)"

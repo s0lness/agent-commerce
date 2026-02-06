@@ -52,6 +52,7 @@ Both modes:
 - configure Matrix mention-gating (prevents runaway bot loops)
 - spawn seller+buyer gateways
 - create a **per-run DM room** and write `runs/<runId>/out/meta.json` (`dmRoomId`)
+  - the DM room invites `@admin:localhost` so you can open it in Element via the invite
 - inject missions + seed a listing in `#market:localhost`
 - stop gateways after `DURATION_SEC` (circuit breaker)
 - export transcripts + write `runs/<runId>/out/summary.json`

@@ -59,4 +59,7 @@ echo "[run_scenario_basic] stopped gateways; exporting + scoring"
 ./lab/export_run.sh "$RUN_ID" || true
 ./lab/score.sh "$RUN_ID" || true
 
+# Convenience pointer
+ln -sfn "$ROOT_DIR/runs/$RUN_ID" "$ROOT_DIR/runs/latest" || true
+
 echo "[run_scenario_basic] done. summary: $ROOT_DIR/runs/$RUN_ID/out/summary.json"
