@@ -30,16 +30,28 @@ This ensures:
   - `.local/secrets.env` (Matrix access tokens)
   - `.local/bootstrap.env` (room IDs, MXIDs)
 
-### Run a basic scenario (auto-export + score)
+### Run a scenario
+
+There are two ways to run:
+
+#### 1) Basic end-to-end (hardcoded)
 
 ```bash
 RUN_ID=$(date +%Y%m%d_%H%M%S) DURATION_SEC=120 ./lab/run_scenario_basic.sh
 ```
 
-This will:
+#### 2) Scenario-driven (recommended)
+
+Scenarios live in `scenarios/*.json`.
+
+```bash
+RUN_ID=$(date +%Y%m%d_%H%M%S) DURATION_SEC=120 ./lab/run_scenario.sh switch_basic
+```
+
+Both modes:
 - configure Matrix mention-gating (prevents runaway bot loops)
 - spawn seller+buyer gateways
-- create a per-run DM room and write `runs/<runId>/out/meta.json`
+- create a **per-run DM room** and write `runs/<runId>/out/meta.json` (`dmRoomId`)
 - inject missions + seed a listing in `#market:localhost`
 - stop gateways after `DURATION_SEC` (circuit breaker)
 - export transcripts + write `runs/<runId>/out/summary.json`
