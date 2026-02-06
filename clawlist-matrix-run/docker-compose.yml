@@ -1,0 +1,12 @@
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: clawlist-synapse
+    restart: unless-stopped
+    ports:
+      - "8008:8008"
+    volumes:
+      - ./synapse-data2:/data
+    environment:
+      - SYNAPSE_SERVER_NAME=localhost
+      - SYNAPSE_REPORT_STATS=no

@@ -1,0 +1,26 @@
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    # Run as the local user so mounted volumes are writable in WSL.
+    # (Synapse defaults to a non-root user inside the container, which can hit permission errors.)
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: unless-stopped
+    # Local-only binding (do NOT expose on LAN)
+    ports:
+      - "127.0.0.1:18008:8008"
+    volumes:
+      - ../synapse-data2:/data
+    environment:
+      - SYNAPSE_SERVER_NAME=localhost
+      - SYNAPSE_REPORT_STATS=no
+
+  element:
+    image: vectorim/element-web:latest
+    restart: unless-stopped
+    depends_on:
+      - synapse
+    # Local-only binding (do NOT expose on LAN)
+    ports:
+      - "127.0.0.1:18080:80"
+    volumes:
+      - ./element-config.json:/app/config.json:ro
