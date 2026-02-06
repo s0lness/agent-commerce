@@ -1,10 +1,11 @@
-.PHONY: up down bootstrap scenario sweep cleanup
+.PHONY: up down bootstrap scenario sweep cleanup human-seller
 
 # Usage examples:
 #   make up
 #   make bootstrap
 #   make scenario SCENARIO=switch_basic DURATION_SEC=120
 #   make sweep SCENARIO=switch_basic N=10
+#   make human-seller DURATION_SEC=300
 
 SCENARIO ?= switch_basic
 RUN_ID ?= $(shell date +%Y%m%d_%H%M%S)
@@ -28,3 +29,6 @@ scenario:
 
 sweep:
 	SCENARIO=$(SCENARIO) N=$(N) ./lab/sweep.sh $(SCENARIO) $(N)
+
+human-seller:
+	RUN_ID=$(RUN_ID) DURATION_SEC=$(DURATION_SEC) ./lab/run_human_seeded_seller.sh
