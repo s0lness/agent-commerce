@@ -25,9 +25,9 @@ case "$PROFILE" in
     exit 1;;
 esac
 
-# Mention-gating defaults: off for now; we can tighten later.
+# Guardrail: mention-gating ON in the market room to prevent runaway loops.
 openclaw --profile "$PROFILE" config set --json 'channels.matrix' \
-  "{ enabled: true, homeserver: '${HOMESERVER}', accessToken: '${ACCESS_TOKEN}', userId: '${USER_ID}', encryption: false, dm: { policy: 'open', allowFrom: ['*'] }, groupPolicy: 'open', groups: { '*': { requireMention: false }, '${ROOM_ID}': { allow: true, requireMention: false } } }" \
+  "{ enabled: true, homeserver: '${HOMESERVER}', accessToken: '${ACCESS_TOKEN}', userId: '${USER_ID}', encryption: false, dm: { policy: 'open', allowFrom: ['*'] }, groupPolicy: 'open', groups: { '*': { requireMention: true }, '${ROOM_ID}': { allow: true, requireMention: true } } }" \
   >/dev/null
 
-echo "[connect_matrix] configured profile=$PROFILE user=$USER_ID room=$ROOM_ID"
+echo "[connect_matrix] configured profile=$PROFILE user=$USER_ID room=$ROOM_ID requireMention=true"

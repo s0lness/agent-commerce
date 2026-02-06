@@ -34,9 +34,17 @@ PORT=18793 TOKEN=token-switch-buyer  ./lab/spawn_gateway.sh switch-buyer
 ./lab/mission.sh switch-seller "MISSION: You are SWITCH_SELLER. You are selling a Nintendo Switch. Anchor price: 200€. Absolute floor: 150€. Post ONE listing in the market room now. When contacted in DM, negotiate for up to 8 turns. Be concise. Run id: ${RUN_ID}."
 ./lab/mission.sh switch-buyer "MISSION: You are SWITCH_BUYER. You want to buy a Nintendo Switch. Max budget: 150€. Start offer: 120€. You can go up to 150€. Watch the market room; when you see a Switch listing, DM the seller within 1 minute. Negotiate for up to 8 turns. Ask condition + accessories + pickup/shipping. Be concise. Run id: ${RUN_ID}."
 
-# Seed listing
+# Seed listing (bots won't react unless mentioned; this is just a marker)
 ./lab/seed_market.sh
 
-echo "[run_scenario_basic] started run_id=$RUN_ID"
-
+DURATION_SEC="${DURATION_SEC:-120}"
+echo "[run_scenario_basic] started run_id=$RUN_ID (duration=${DURATION_SEC}s)"
 echo "[run_scenario_basic] tip: open Element and join #market:localhost"
+
+echo "[run_scenario_basic] sleeping ${DURATION_SEC}s then stopping gateways (circuit breaker)"
+sleep "$DURATION_SEC" || true
+
+./lab/stop_gateway.sh switch-seller "$RUN_ID" || true
+./lab/stop_gateway.sh switch-buyer "$RUN_ID" || true
+
+echo "[run_scenario_basic] stopped gateways"
