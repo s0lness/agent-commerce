@@ -23,7 +23,11 @@ node_modules/
 
 # Local Synapse (do not commit generated server state / keys)
 synapse/
-clawlist-matrix-run/
+
+# Matrix lab local state (do not commit)
+clawlist-matrix-run/.local/
+clawlist-matrix-run/runs/
+clawlist-matrix-run/synapse-data*/
 
 # Local trash
 .trash/
