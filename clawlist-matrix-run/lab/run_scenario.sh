@@ -29,10 +29,7 @@ DURATION_SEC="${DURATION_SEC:-${SCEN_DURATION_SEC:-120}}"
 # Ensure seller/buyer profiles are ready and connected to matrix (mention gated)
 openclaw --profile "$SELLER_PROFILE" config set gateway.mode local >/dev/null 2>&1 || true
 openclaw --profile "$BUYER_PROFILE"  config set gateway.mode local >/dev/null 2>&1 || true
-openclaw --profile "$SELLER_PROFILE" plugins enable matrix >/dev/null 2>&1 || true
-openclaw --profile "$BUYER_PROFILE"  plugins enable matrix >/dev/null 2>&1 || true
 
-# connect_matrix currently assumes switch-seller/switch-buyer; keep for now
 ./lab/connect_matrix.sh "$SELLER_PROFILE"
 ./lab/connect_matrix.sh "$BUYER_PROFILE"
 
