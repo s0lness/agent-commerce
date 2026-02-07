@@ -1,0 +1,16 @@
+{
+  "homeserver": "http://127.0.0.1:18008",
+  "marketRoomId": "!dKiWVxQQCSznzttEQs:localhost",
+  "pollIntervalMs": 10000,
+  "stateFile": "runs/poller-test/state.env",
+  "buyers": [
+    {
+      "profile": "test-buyer",
+      "interests": ["switch", "nintendo", "playstation", "ps5"],
+      "mxid": "@switch_buyer:localhost",
+      "accessToken": "BUYER_TOKEN_FROM_BOOTSTRAP_ENV",
+      "gatewayUrl": "http://127.0.0.1:18900",
+      "gatewayToken": "token-test-buyer"
+    }
+  ]
+}
