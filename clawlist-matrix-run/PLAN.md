@@ -245,7 +245,51 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
 
 ---
 
-## Phase 11 — Testing & validation improvements
+## Phase 11 — Bug fixes from ISSUES.md
+
+**Goal:** Fix documented issues discovered during live testing.
+
+**See ISSUES.md for full context and research notes.**
+
+- [ ] **Fix scoring attribution bug** (ISSUES.md #6):
+  - Price parser misattributes quotes as offers
+  - Example: "120€ is too low" counted as seller OFFERING 120€
+  - Add context-aware parsing: require positive framing ("I can do X", "take X")
+  - Filter negative context ("too low", "no to", "rejected")
+  - Add unit tests for edge cases
+  - Target: zero false positives on quote/rejection detection
+
+- [ ] **Operator bot proactive DM monitoring** (ISSUES.md #2):
+  - Currently: user manually asks bot to check DMs
+  - Desired: bot automatically notifies when Matrix DMs arrive
+  - Add DM polling loop (every 30-60s or webhooks)
+  - Send Telegram notification: "📬 New DM from @buyer: [preview]"
+  - UX improvement for human-in-the-loop testing
+
+- [ ] **Fix internal message leakage** (ISSUES.md #1):
+  - Approval requests appearing in #market:localhost
+  - Deal confirmations leaking to public room
+  - Add message classification (public vs internal vs approval)
+  - Route approvals → Telegram DMs only
+  - Route deal confirmations → Matrix DM thread only
+  - Keep market room clean (listings only)
+
+- [ ] **Fix buyer flip-flopping** (ISSUES.md #3):
+  - Agent changes position mid-negotiation ("yes" → "no" → "yes")
+  - Add negotiation state tracking (current offer, history, bounds)
+  - Improve mission prompt with clear decision logic
+  - Add "don't contradict yourself" guardrail
+  - Consider structured negotiation protocol (Phase 11+)
+
+**Acceptance:**
+- Scoring tests pass with zero false positives
+- Operator bot sends proactive DM notifications
+- No internal messages leak to market room
+- Agents maintain consistent negotiation positions
+
+---
+
+## Phase 12 — Testing & validation improvements
 
 **Goal:** Make the testing framework more robust and easier to use.
 
@@ -287,7 +331,7 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
 
 ---
 
-## Phase 12 — Developer experience improvements
+## Phase 13 — Developer experience improvements
 
 **Goal:** Make it easier to develop, debug, and iterate.
 
@@ -328,7 +372,7 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
 
 ---
 
-## Phase 13 — Export & analysis tools
+## Phase 14 — Export & analysis tools
 
 **Goal:** Better tools for analyzing results and debugging issues.
 

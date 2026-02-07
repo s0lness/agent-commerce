@@ -250,8 +250,9 @@ make cleanup
 This project has two parallel tracks:
 
 **PLAN.md** - Engineering backlog (what to build)
-- Concrete implementation phases (Phase 0-10)
+- Concrete implementation phases (Phase 0-14)
 - Code tasks, infrastructure setup, tooling
+- Bug fixes from ISSUES.md (Phase 11)
 - When research reveals a needed feature → add it here
 
 **RESEARCH.md** - Research agenda (what to discover)
@@ -259,7 +260,16 @@ This project has two parallel tracks:
 - Experimental protocols
 - Topics: agent-native commerce, security, strategy comparison, model comparison, coalitions, etc.
 
-**Flow:** Research question → experiment → "we need feature X" → add Phase to PLAN.md
+**ISSUES.md** - Bug tracker (what's broken)
+- Problems discovered during research/testing
+- Root cause analysis and proposed fixes
+- When ready to fix → becomes task in PLAN.md
+
+**Workflow:**
+1. Research/testing → discover problem
+2. Document in ISSUES.md with context
+3. Create task in PLAN.md when ready to fix
+4. Mark as ✅ Fixed in ISSUES.md (include commit)
 
 ### Other Docs
 

@@ -1,28 +1,38 @@
 # Known Issues (from Live Testing)
 
-**Status Note:** These issues are **documented but NOT yet fixed**. This file tracks what needs to be addressed.
+**Purpose:** Document problems discovered during research/testing.
 
-## Current Status (2026-02-07 19:07)
+**Workflow:**
+1. **Research/testing** → discover problem or unwanted behavior
+2. **Document here** with context, examples, root cause analysis
+3. **Create task in PLAN.md** when ready to fix
+4. **Mark as ✅ Fixed** when resolved (include commit hash)
 
-❌ **Not Fixed:**
-1. Internal messages leaking to public market room
-2. Operator bot not proactive (manual DM checks)
-3. Buyer agent flip-flopping decisions
-4. **Agents not autonomously listening/monitoring** (CRITICAL - user requirement)
-5. Agent spawn reliability issues
-6. **Scoring: offer attribution bug** (NEW - found during Phase 9 testing)
+**Status:** These issues are documented but NOT yet fixed. See PLAN.md Phase 11 for scheduled fixes.
+
+## Current Status (2026-02-08)
+
+📋 **Scheduled for Fix (PLAN.md Phase 11):**
+1. Internal messages leaking to public market room → PLAN.md Phase 11
+2. Operator bot not proactive (manual DM checks) → PLAN.md Phase 11
+3. Buyer agent flip-flopping decisions → PLAN.md Phase 11
+6. Scoring: offer attribution bug → PLAN.md Phase 11
 
 ✅ **Fixed:**
 - Matrix plugin auto-enable (commit 8197c35)
 - Auth profile copying (commit 8197c35)
 - Gateway cleanup (commit a516069) - no longer kills self
 - Port conflicts (commit a516069) - auto-pick free ports
-- Price parsing (commit TBD) - improved regex, fewer false positives
+- Price parsing (commit d67ebe8) - improved regex, fewer false positives
 
-📝 **Documented Only:**
-- All issues below are documented with proposed fixes
+✅ **Resolved / Not a Bug:**
+- #4 "Agents not autonomously listening" → Already working! Agents receive Matrix events automatically via plugin (commit 73e3e96)
+- #5 "Agent spawn reliability" → Partially fixed in TypeScript migration (commit a516069)
+
+📝 **Research Notes:**
+- All issues below include root cause analysis and proposed fixes
 - Phase 9 (TypeScript migration) complete
-- Scoring bugs exist but don't affect agent behavior
+- Scoring bugs don't affect agent behavior (post-hoc analysis only)
 
 ---
 
