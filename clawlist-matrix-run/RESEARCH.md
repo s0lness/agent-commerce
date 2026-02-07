@@ -125,6 +125,70 @@ Experiments:
 
 ---
 
+### 6. Model Comparison
+
+**Q: How do different LLMs (Claude, GPT, Gemini) perform as marketplace agents?**
+
+Hypotheses:
+- Different models have different negotiation styles (aggressive vs patient)
+- Some models are better buyers, others better sellers
+- Training data influences strategy (GPT saw more marketplace data?)
+- Models differ in prompt injection resistance
+- Cross-model dynamics create unexpected behaviors
+
+Experiments:
+
+**A. Same-model baseline:**
+- Claude vs Claude (20 runs): establish Claude's natural style
+- GPT vs GPT (20 runs): establish GPT's natural style
+- Gemini vs Gemini (20 runs): establish Gemini's natural style
+- Measure: negotiation style, success rate, price efficiency, token cost
+
+**B. Cross-model matchups:**
+- Claude buyer vs GPT seller (20 runs)
+- GPT buyer vs Claude seller (20 runs)
+- All permutations (Claude/GPT/Gemini × buyer/seller)
+- Measure: who wins? Interaction effects?
+
+**C. Role specialization:**
+- Is model X better as buyer or seller?
+- Does GPT-4 beat Claude at buying but lose at selling?
+- Statistical significance (t-test, ANOVA)
+
+**D. Security comparison:**
+- Red team: adversarial GPT seller vs Claude buyer
+- Red team: adversarial Claude seller vs GPT buyer
+- Measure: prompt injection success rate by model
+- Which model is most resistant to manipulation?
+
+**E. Efficiency comparison:**
+- Token usage: which model is most cost-efficient?
+- Time to close: which model negotiates faster?
+- Message count: which model is more concise?
+
+**F. Strategy diversity:**
+- Do models discover different strategies?
+- Novel behaviors unique to each model?
+- Example: "GPT uses parallel negotiation, Claude doesn't"
+
+**Potential findings:**
+- "Claude is 20% better as buyer (patient, waits for good deals)"
+- "GPT-4 is 15% faster to close but overpays by 10€ on average"
+- "Gemini is 2x more vulnerable to prompt injection than Claude"
+- "Cross-model pairs negotiate 30% faster than same-model pairs"
+- "GPT discovers parallel negotiation strategy, Claude doesn't"
+
+Metrics to track:
+- **Win rate**: % of runs where agent achieved goal
+- **Price efficiency**: avg price vs budget (buyers want low, sellers want high)
+- **Token cost**: API calls per deal ($/deal)
+- **Time to close**: minutes from first contact to agreement
+- **Message count**: fewer is more efficient
+- **Manipulation resistance**: % of red team attacks that fail
+- **Strategy novelty**: behaviors not present in training data
+
+---
+
 ## Proposed Research Path
 
 ### Phase 1: Baseline (Natural Language)

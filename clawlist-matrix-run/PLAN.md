@@ -336,6 +336,104 @@ Goal: Discover which negotiation strategies are most effective, including agent-
 
 **See**: RESEARCH.md for full research agenda
 
+### Phase 13 — Model comparison framework
+Goal: Compare how different LLMs (Claude, GPT, Gemini) perform as marketplace agents.
+
+**Research questions:**
+
+1. **Negotiation style differences**:
+   - Does GPT-4 negotiate more aggressively than Claude?
+   - Which model concedes faster?
+   - Social dynamics: rapport-building vs transactional?
+
+2. **Performance by role**:
+   - Which model is better as buyer? As seller?
+   - Price efficiency: which gets better deals?
+   - Success rate by model
+
+3. **Security/manipulation resistance**:
+   - Which model is more vulnerable to prompt injection?
+   - Can GPT sellers manipulate Claude buyers (or vice versa)?
+   - Cross-model adversarial testing
+
+4. **Efficiency metrics**:
+   - Token usage per deal (cost comparison)
+   - Time to close (response latency)
+   - Message count to agreement
+
+5. **Strategy diversity**:
+   - Do different models discover different strategies?
+   - Novel behaviors unique to each model?
+   - Training data influence on negotiation patterns?
+
+6. **Cross-model dynamics**:
+   - GPT buyer vs Claude seller: who wins?
+   - Do mixed pairs behave differently than same-model pairs?
+   - Interaction effects (model A beats model B at buying, loses at selling)
+
+**Implementation:**
+
+1. **Scenario model selection**:
+   ```json
+   {
+     "agents": {
+       "seller": {
+         "model": "anthropic/claude-sonnet-4-5",
+         "mission": "Sell Nintendo Switch, min 150€"
+       },
+       "buyer": {
+         "model": "openai/gpt-4",
+         "mission": "Buy Nintendo Switch, max 200€"
+       }
+     }
+   }
+   ```
+
+2. **Model permutation sweeps**:
+   - Same-model baseline: Claude vs Claude, GPT vs GPT, Gemini vs Gemini
+   - Cross-model matchups: All buyer/seller model combinations
+   - 20+ runs per permutation for statistical significance
+
+3. **Enhanced scoring**:
+   - Extract model info from meta.json
+   - Segment results by buyer model, seller model, pair
+   - Compute win rate, avg price, efficiency by model
+
+4. **Aggregate analysis**:
+   ```json
+   {
+     "modelStats": {
+       "claude-sonnet-4-5": {
+         "asBuyer": {"winRate": 0.75, "avgPrice": 165, "avgTokens": 2500},
+         "asSeller": {"winRate": 0.60, "avgPrice": 175, "avgTokens": 2200}
+       },
+       "gpt-4": {
+         "asBuyer": {"winRate": 0.80, "avgPrice": 160, "avgTokens": 3000},
+         "asSeller": {"winRate": 0.50, "avgPrice": 180, "avgTokens": 2800}
+       }
+     },
+     "crossModelMatchups": {
+       "claude_buyer_vs_gpt_seller": {"winRate": 0.70, "avgPrice": 168},
+       "gpt_buyer_vs_claude_seller": {"winRate": 0.85, "avgPrice": 158}
+     }
+   }
+   ```
+
+**Acceptance:**
+- Scenarios can specify model per agent
+- Sweep supports model permutation testing
+- Aggregate stats show model performance breakdown
+- Statistical significance testing (t-test) for model comparisons
+- At least one clear winner identified (e.g., "GPT-4 is 15% better as buyer")
+
+**Potential findings:**
+- "Claude is more patient, gets better prices but takes longer"
+- "GPT-4 is more aggressive, higher success rate but overpays"
+- "Gemini is vulnerable to prompt injection (40% manipulation success)"
+- "Cross-model pairs negotiate 30% faster than same-model pairs"
+
+**See**: RESEARCH.md for full model comparison research agenda
+
 ---
 
 ## Non-goals (for now)
