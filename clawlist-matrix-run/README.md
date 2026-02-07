@@ -102,6 +102,26 @@ make human-seller DURATION_SEC=300
 
 **Not yet migrated to TypeScript** - uses `lab/run_human_seeded_seller.sh`
 
+## Test Analysis Workflow
+
+**For each test run:**
+
+1. **Run test**: `make scenario SCENARIO=switch_basic`
+2. **Review results**: `cat runs/latest/out/summary.json`
+3. **Analyze behavior**: Copy `docs/TEST_TEMPLATE.md` → `runs/<runId>/ANALYSIS.md`
+4. **Document findings**:
+   - ✅ What agents did well
+   - ❌ Problems & stuck points
+   - 🔍 Behavioral patterns
+   - 💡 Improvement recommendations
+   - 🧪 Hypotheses for next tests
+5. **Track issues**: Add bugs to ISSUES.md → tasks in PLAN.md
+6. **Iterate**: Run next test based on insights
+
+**See**: `docs/TEST_TEMPLATE.md` for full analysis structure
+
+---
+
 ## Output Structure
 
 Each test run produces artifacts in `runs/<runId>/out/`:
