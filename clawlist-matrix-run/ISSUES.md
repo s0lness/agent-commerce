@@ -17,6 +17,8 @@
 2. Operator bot not proactive (manual DM checks) → PLAN.md Phase 11
 3. Buyer agent flip-flopping decisions → PLAN.md Phase 11
 6. Scoring: offer attribution bug → PLAN.md Phase 11
+7. **NEW**: Timing calculation bug (tFirstDmSec incorrect) → PLAN.md Phase 11
+8. **NEW**: Approval workflow undefined → PLAN.md Phase 11
 
 ✅ **Fixed:**
 - Matrix plugin auto-enable (commit 8197c35)
@@ -150,6 +152,97 @@ Seller: "I can do 150€"
 - Consider adding structured negotiation protocol
 
 **Phase:** Needs TypeScript migration for proper state management
+
+---
+
+### 7. Timing Calculation Bug (CRITICAL - NEW)
+**Problem:** `tFirstDmSec` metric reports wildly incorrect values  
+**Discovered:** 2026-02-08 during autonomy_test_004528  
+**Impact:** Success metrics broken, can't measure agent responsiveness
+
+**Example:**
+```json
+{
+  "tFirstDmSec": 21988  // Reports 6 hours
+}
+```
+
+**Reality:** Buyer responded in **6.8 seconds**
+
+**Timeline evidence:**
+- Seller posts listing: `1770507969151` (origin_server_ts)
+- Buyer sends first DM: `1770507975957` (origin_server_ts)
+- Actual delta: 6806ms = 6.8 seconds
+
+**Root Cause:**
+- Likely using wrong timestamp reference in score.ts
+- Maybe comparing `origin_server_ts` to local time?
+- Or including old DM room history from previous runs?
+
+**Fix Required:**
+```typescript
+// score.ts: analyzeTranscript()
+// Find first buyer message in DM room
+// Compare to seller's market listing timestamp
+// Use origin_server_ts consistently
+```
+
+**Impact if not fixed:**
+- Time-based success criteria broken
+- Can't measure agent performance
+- Sweep statistics meaningless
+
+**Phase:** Fix in Phase 11 with unit tests
+
+---
+
+### 8. Approval Workflow Undefined (NEW)
+**Problem:** Unclear whether agents should auto-accept deals or require owner approval  
+**Discovered:** 2026-02-08 during autonomy_test_004528  
+**Impact:** Owner might not know their agent closed a deal
+
+**Current behavior:**
+- Seller accepted 150€ deal autonomously
+- No "APPROVAL NEEDED" message sent
+- Scorer flagged: `NO_APPROVAL_MARKER_BEFORE_COMMIT`
+
+**Question:** What's the right policy?
+
+**Option A: Auto-accept within bounds** (current)
+- Pros: Fast, autonomous, no human bottleneck
+- Cons: Owner might not know, can't veto bad deals
+- Use case: High-trust, low-value trades
+
+**Option B: Always require approval**
+- Pros: Owner maintains control, can veto
+- Cons: Slow, defeats autonomy purpose
+- Use case: High-value trades, trust-building
+
+**Option C: Hybrid (smart approval)**
+- Auto-accept within tight bounds (e.g., ±5% of floor/ceiling)
+- Require approval for edge cases or first deal
+- Pros: Balance autonomy + control
+- Cons: More complex logic
+
+**User Experience Consideration:**
+- If approval required, how long to wait?
+- What if owner doesn't respond?
+- Timeout and auto-reject? Or let deal lapse?
+
+**Proposed Fix:**
+1. Add `approvalPolicy` to scenario config:
+   ```json
+   {
+     "seller": {
+       "approvalPolicy": "auto" | "required" | "smart"
+     }
+   }
+   ```
+2. Implement approval workflow in agent mission
+3. Update scorer to check policy compliance
+4. Test with human-in-the-loop (Telegram operator)
+
+**Phase:** Design in Phase 11, implement if needed
 
 ---
 

@@ -281,11 +281,26 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
   - Add "don't contradict yourself" guardrail
   - Consider structured negotiation protocol (Phase 11+)
 
+- [ ] **Fix timing calculation bug** (ISSUES.md #7):
+  - tFirstDmSec reports 6 hours when actual was 6.8 seconds
+  - Use correct timestamp references (origin_server_ts consistently)
+  - Add timing breakpoints: first offer, first counter, deal close
+  - Unit tests for edge cases (old DM rooms, concurrent runs)
+
+- [ ] **Define approval workflow** (ISSUES.md #8):
+  - Decide policy: auto-accept within bounds vs require approval?
+  - Implement chosen policy in agent missions
+  - Add approval markers for human-in-the-loop
+  - Update scorer to validate policy compliance
+  - Test with Telegram operator (human approval flow)
+
 **Acceptance:**
 - Scoring tests pass with zero false positives
 - Operator bot sends proactive DM notifications
 - No internal messages leak to market room
 - Agents maintain consistent negotiation positions
+- Timing metrics accurate (±1 second)
+- Approval workflow clear and tested
 
 ---
 
