@@ -4,8 +4,17 @@
 
 ## Recent Updates (2026-02-08)
 
-✅ **Phase 11-14 Complete:**
-- 67 unit tests passing (price parsing, schema validation, statistics, logging)
+✅ **Phases 10-14 Progress:**
+
+**Phase 10 (Security):**
+- Constraint enforcement system (hard budget/floor validation)
+- Prompt injection detection & sanitization
+- Audit logging for security review
+- 2 red team scenarios (injection, social engineering)
+- Comprehensive security documentation
+- 97 total unit tests passing
+
+**Phases 11-14 (Testing, DX, Export):**
 - Statistical sweep analysis (mean/median/stddev, CSV export)
 - Structured logging system (DEBUG/INFO/WARN/ERROR levels, JSON mode)
 - Scenario schema validation
@@ -13,7 +22,7 @@
 - Enhanced export CLI (filter by agent/date/format)
 - Proactive DM monitoring for operator bot
 - Decision consistency rules to prevent agent flip-flopping
-- 5 diverse scenarios available
+- 7 diverse scenarios (basic, aggressive, patient, macbook, iphone, 2x redteam)
 
 ## Quick Start
 
@@ -65,8 +74,18 @@ make sweep SCENARIO=switch_basic N=10
 make analyze DIR=runs/sweep_xxx       # Statistical analysis of sweep results
 make transcript RUN_ID=latest FILTER=DEAL  # Pretty-print transcript (color-coded)
 make export RUN_ID=latest FORMAT=csv  # Export to JSONL/JSON/CSV
+make audit RUN_ID=latest              # Security audit summary
 make logs RUN_ID=xxx                  # Tail run logs
 ```
+
+### Security Testing
+```bash
+make scenario SCENARIO=redteam_injection  # Test prompt injection defenses
+make scenario SCENARIO=redteam_social     # Test social engineering defenses
+make audit RUN_ID=latest                  # Review security audit log
+```
+
+**See docs/SECURITY.md for full security guide**
 
 ### Cleanup
 ```bash
