@@ -62,6 +62,29 @@ transcript:
 		node dist/cli-view-transcript.js runs/$(RUN_ID)/out/dm.jsonl $(if $(FILTER),--filter=$(FILTER),); \
 	fi
 
+AGENT ?=
+FROM ?=
+TO ?=
+FORMAT ?= jsonl
+OUT ?=
+export:
+	@if [ -z "$(RUN_ID)" ]; then \
+		echo "Usage: make export RUN_ID=<runId> [options]"; \
+		echo "Options:"; \
+		echo "  AGENT=@buyer:localhost    Filter by agent"; \
+		echo "  FROM=2026-02-07           Start date"; \
+		echo "  TO=2026-02-08             End date"; \
+		echo "  FORMAT=jsonl|json|csv     Output format"; \
+		echo "  OUT=file.csv              Output file"; \
+	else \
+		node dist/cli-export.js --dir=runs/$(RUN_ID) \
+			$(if $(AGENT),--agent=$(AGENT),) \
+			$(if $(FROM),--from=$(FROM),) \
+			$(if $(TO),--to=$(TO),) \
+			--format=$(FORMAT) \
+			$(if $(OUT),--out=$(OUT),); \
+	fi
+
 KEEP ?= 10
 clean-runs:
 	@echo "Keeping $(KEEP) most recent runs, deleting the rest..."
