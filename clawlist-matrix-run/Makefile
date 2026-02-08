@@ -1,4 +1,4 @@
-.PHONY: build test validate up down bootstrap scenario sweep cleanup logs clean-runs live-start live-stop live-status live-populate live-agents live-agents-start live-agents-stop live-agents-status
+.PHONY: build test validate check up down bootstrap scenario sweep cleanup logs clean-runs live-start live-stop live-status live-populate live-agents live-agents-start live-agents-stop live-agents-status
 
 # Build & Test
 build:
@@ -9,6 +9,9 @@ test:
 
 validate:
 	npm run validate
+
+check:
+	@./scripts/validate-installation.sh
 
 # Docker/Infrastructure
 up: build
