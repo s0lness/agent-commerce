@@ -4,15 +4,15 @@
 
 ## Recent Updates (2026-02-08)
 
-✅ **Phases 10-14 Progress:**
+✅ **Phases 10-14 Complete:**
 
-**Phase 10 (Security):**
+**Phase 10 (Security) ✅:**
 - Constraint enforcement system (hard budget/floor validation)
 - Prompt injection detection & sanitization
 - Audit logging for security review
 - 2 red team scenarios (injection, social engineering)
 - Comprehensive security documentation
-- 97 total unit tests passing
+- 38 security tests (154 total tests passing)
 
 **Phases 11-14 (Testing, DX, Export):**
 - Statistical sweep analysis (mean/median/stddev, CSV export)
