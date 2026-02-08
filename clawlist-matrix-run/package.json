@@ -9,7 +9,8 @@
     "watch": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "validate": "npm run build && node dist/cli-validate-scenarios.js"
   },
   "dependencies": {
     "@types/node": "^22.0.0",
