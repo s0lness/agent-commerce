@@ -36,11 +36,28 @@ make transcript RUN_ID=latest
 
 ## Documentation
 
-- **[PLAN.md](PLAN.md)** - Detailed implementation plan & progress
+### Lab-Specific Guides
+- **[PLAN.md](PLAN.md)** - Lab development roadmap (phases 0-15)
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Common commands & workflows
-- **[docs/SECURITY.md](docs/SECURITY.md)** - Security architecture & defenses
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
 - **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - How to write & run tests
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Common issues & solutions
+- **[docs/LIVE_MODE.md](docs/LIVE_MODE.md)** - Sandbox exploration mode
+- **[docs/METRICS_GUIDE.md](docs/METRICS_GUIDE.md)** - Performance analysis
+
+### Agent Deployment Guides
+For configuring and deploying agents (not just testing):
+- **[../docs/agents/](../docs/agents/)** - Agent configuration guides
+  - Buyer/seller setup
+  - Agent behavior specs
+  - Model selection
+  - Security best practices
+  - Friends deployment
+
+### Architecture & Research
+- **[../docs/ARCHITECTURE_PRINCIPLES.md](../docs/ARCHITECTURE_PRINCIPLES.md)** - Design principles
+- **[../docs/PROTOCOL.md](../docs/PROTOCOL.md)** - Protocol specification
+- **[../docs/RESEARCH.md](../docs/RESEARCH.md)** - Research questions
 
 ## Architecture
 
