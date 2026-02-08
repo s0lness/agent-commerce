@@ -13,6 +13,9 @@ validate:
 check:
 	@./scripts/validate-installation.sh
 
+validate-system:
+	@./scripts/run-validation-suite.sh
+
 # Docker/Infrastructure
 up: build
 	node dist/cli-up.js
@@ -43,6 +46,11 @@ sweep: build
 analyze:
 	@if [ -z "$(DIR)" ]; then echo "Usage: make analyze DIR=runs/sweep_xxx"; exit 1; fi
 	node dist/cli-analyze-sweep.js $(DIR) --csv
+
+# Performance metrics
+performance:
+	@if [ -z "$(DIR)" ]; then echo "Usage: make performance DIR=runs/sweep_xxx"; exit 1; fi
+	node dist/cli-performance.js $(DIR)
 
 # Security audit summary
 audit:
