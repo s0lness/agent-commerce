@@ -11,10 +11,10 @@ validate:
 	npm run validate
 
 check:
-	@./scripts/validate-installation.sh
+	npm run cli:validate-installation
 
 validate-system:
-	@./scripts/run-validation-suite.sh
+	npm run cli:validation-suite
 
 # Docker/Infrastructure
 up: build
@@ -112,36 +112,27 @@ clean-runs:
 	@echo "Done. Runs remaining:"
 	@ls -t runs/ | wc -l
 
-# Live sandbox mode (kept bash for now - will migrate later)
+# Live sandbox mode (TypeScript)
 POPULATE ?= 0
 SELLERS ?= 3
 BUYERS ?= 2
 
 live-start:
-	POPULATE=$(POPULATE) ./lab/live_start.sh
+	npm run cli:live -- start $(if $(filter-out 0,$(POPULATE)),--populate=$(POPULATE),)
 
 live-stop:
-	./lab/live_stop.sh
+	npm run cli:live -- stop
 
 live-status:
-	./lab/live_status.sh
-
-live-populate:
-	./lab/populate_market.sh $(N)
+	npm run cli:live -- status
 
 # Live agents with behaviors
-live-agents:
-	./lab/live_agents.sh status
-
 live-agents-start:
-	./lab/live_agents.sh start $(SELLERS) $(BUYERS)
+	npm run cli:spawn-agents -- buyers $(BUYERS)
+	npm run cli:spawn-agents -- sellers $(SELLERS)
 
 live-agents-stop:
-	./lab/live_agents.sh stop
+	npm run cli:spawn-agents -- stop
 
 live-agents-status:
-	./lab/live_agents.sh status
-
-# Legacy human-seller mode (kept bash for now)
-human-seller:
-	RUN_ID=$(RUN_ID) DURATION_SEC=$(DURATION_SEC) ./lab/run_human_seeded_seller.sh
+	npm run cli:spawn-agents -- status

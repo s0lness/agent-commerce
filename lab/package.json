@@ -2,7 +2,15 @@
   "name": "clawlist-lab",
   "version": "1.0.0",
   "description": "TypeScript test framework for autonomous AI agent marketplace negotiation",
-  "keywords": ["ai", "agent", "negotiation", "marketplace", "matrix", "testing", "security"],
+  "keywords": [
+    "ai",
+    "agent",
+    "negotiation",
+    "marketplace",
+    "matrix",
+    "testing",
+    "security"
+  ],
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -13,7 +21,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "validate": "npm run build && node dist/cli-validate-scenarios.js"
+    "validate": "npm run build && node dist/cli-validate-scenarios.js",
+    "cli:live": "tsx src/cli-live.ts",
+    "cli:spawn-agents": "tsx src/cli-spawn-agents.ts",
+    "cli:validate-installation": "tsx src/cli-validate-installation.ts",
+    "cli:validation-suite": "tsx src/cli-validation-suite.ts"
   },
   "dependencies": {
     "@types/node": "^22.0.0",
@@ -21,6 +33,7 @@
   },
   "devDependencies": {
     "@vitest/ui": "^4.0.18",
+    "tsx": "^4.21.0",
     "vitest": "^4.0.18"
   }
 }
