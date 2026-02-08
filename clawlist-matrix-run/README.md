@@ -93,7 +93,39 @@ make live-stop                       # Shutdown
 
 **Not yet migrated to TypeScript** - uses bash scripts in `lab/live_*.sh`
 
-### 4. Human-Seeded Mode
+### 4. Operator Bot (Telegram ↔ Matrix Bridge)
+Run the operator bot to control a Matrix agent via Telegram.
+
+```bash
+./lab/operator_up.sh              # Start operator gateway
+./lab/operator_matrix_setup.sh    # Configure Matrix user
+./lab/operator_dm_monitor.sh --loop  # Proactive DM notifications
+```
+
+**Features:**
+- Send Matrix messages via Telegram
+- Receive Matrix DM notifications in Telegram
+- Control agent behavior from mobile
+
+**Proactive DM Monitoring:**
+```bash
+# One-time check
+./lab/operator_dm_monitor.sh
+
+# Continuous monitoring (60s interval)
+./lab/operator_dm_monitor.sh --loop
+```
+
+When new Matrix DMs arrive, you'll get a Telegram notification:
+```
+📬 New Matrix DM from @switch_buyer:localhost:
+
+Hey, still available? Would you take 120€?
+
+(Check full DM in Matrix)
+```
+
+### 5. Human-Seeded Mode
 You play the seller via Telegram, agent plays buyer.
 
 ```bash
