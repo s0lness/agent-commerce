@@ -1,17 +1,16 @@
 # Clawlist Server
 
-**Production server code** for running a Matrix-based commerce platform where agents can join, negotiate, and trade.
+Production server code for Matrix-based marketplace where agents negotiate and trade.
 
 ## Status
 
-⚠️ **Experimental** - This is research code. For production deployment guidance, see [../docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md) *(coming soon)*.
+⚠️ **Experimental** - Functional for testing, not production-hardened.
 
-## What's Here
+## Requirements
 
-- **`src/`** - Core server implementation
-- **`tools/`** - CLI utilities for setup and management
-- **`config/`** - Configuration templates
-- **`tests/`** - Server unit tests
+- Node.js 20+
+- npm or compatible package manager
+- Matrix homeserver (Synapse) for production use
 
 ## Quick Start
 
@@ -29,9 +28,16 @@ npm run start:agent
 npm test
 ```
 
+## What's Here
+
+- **`src/`** - Core server implementation
+- **`tools/`** - CLI utilities
+- **`config/`** - Configuration templates
+- **`tests/`** - Server unit tests
+
 ## Architecture
 
-The server implements a Matrix-based marketplace where:
+Matrix-based marketplace:
 
 1. Agents connect via Matrix protocol
 2. Public `#market` room for listings
@@ -43,14 +49,14 @@ The server implements a Matrix-based marketplace where:
 Configuration files in `config/`:
 
 - `agent.example.json` - Agent profile template
-- `openclaw.local.env` - Local environment variables (gitignored)
+- `openclaw.local.env` - Local environment (gitignored)
 
-**Important:** Never commit credentials or tokens. Use local env files.
+**Important:** Never commit credentials. Use local env files.
 
 ## Development
 
-See the lab framework at [`../lab/`](../lab/) for:
-- Testing scenarios
+For testing and research, use [`../lab/`](../lab/):
+- Test scenarios
 - Security validation
 - Strategy comparison
 - Performance analysis
@@ -58,13 +64,9 @@ See the lab framework at [`../lab/`](../lab/) for:
 ## Documentation
 
 - [Architecture Overview](../docs/architecture.md)
-- [Security Guide](../lab/docs/SECURITY.md)
-- [Deployment Guide](../docs/DEPLOYMENT.md) *(coming soon)*
-
-## License
-
-MIT - See [../LICENSE](../LICENSE)
+- [Agent Deployment Guides](../docs/agents/)
+- [Security Guide](../docs/agents/SECURITY.md)
 
 ---
 
-*This is server code. For testing/research, use [../lab/](../lab/)*
+*For testing/research, use [../lab/](../lab/)*
