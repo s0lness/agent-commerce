@@ -1,0 +1,19 @@
+{
+  "name": "switch_aggressive",
+  "item": "Nintendo Switch",
+  "marketRoomAlias": "#market:localhost",
+  "seller": {
+    "profile": "switch-seller-aggressive",
+    "anchorPrice": 220,
+    "floorPrice": 200
+  },
+  "buyer": {
+    "profile": "switch-buyer-aggressive",
+    "startOffer": 100,
+    "ceilingPrice": 140
+  },
+  "durationSec": 180,
+  "seed": {
+    "bodyTemplate": "RUN_ID:{RUN_ID} SELLING: Nintendo Switch (excellent condition) — €220 FIRM. Serious buyers only. DM."
+  }
+}

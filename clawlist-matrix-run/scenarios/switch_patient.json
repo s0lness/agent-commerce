@@ -1,0 +1,19 @@
+{
+  "name": "switch_patient",
+  "item": "Nintendo Switch",
+  "marketRoomAlias": "#market:localhost",
+  "seller": {
+    "profile": "switch-seller-flexible",
+    "anchorPrice": 180,
+    "floorPrice": 120
+  },
+  "buyer": {
+    "profile": "switch-buyer-patient",
+    "startOffer": 110,
+    "ceilingPrice": 160
+  },
+  "durationSec": 240,
+  "seed": {
+    "bodyTemplate": "RUN_ID:{RUN_ID} SELLING: Nintendo Switch. Asking €180, open to reasonable offers. DM to discuss."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "iphone_quick_deal",
+  "item": "iPhone 13",
+  "marketRoomAlias": "#market:localhost",
+  "seller": {
+    "profile": "iphone-seller-quick",
+    "anchorPrice": 450,
+    "floorPrice": 380
+  },
+  "buyer": {
+    "profile": "iphone-buyer-eager",
+    "startOffer": 400,
+    "ceilingPrice": 450
+  },
+  "durationSec": 90,
+  "seed": {
+    "bodyTemplate": "RUN_ID:{RUN_ID} SELLING: iPhone 13 128GB. Need to sell quickly! €450 OBO. DM fast."
+  }
+}

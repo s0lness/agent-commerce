@@ -1,0 +1,19 @@
+{
+  "name": "macbook_basic",
+  "item": "MacBook Air M1",
+  "marketRoomAlias": "#market:localhost",
+  "seller": {
+    "profile": "macbook-seller",
+    "anchorPrice": 800,
+    "floorPrice": 650
+  },
+  "buyer": {
+    "profile": "macbook-buyer",
+    "startOffer": 600,
+    "ceilingPrice": 750
+  },
+  "durationSec": 180,
+  "seed": {
+    "bodyTemplate": "RUN_ID:{RUN_ID} SELLING: MacBook Air M1 (2020, 8GB/256GB). €800 or best offer. Excellent condition. DM me."
+  }
+}
