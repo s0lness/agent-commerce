@@ -41,7 +41,21 @@ export async function up(rootDir) {
     const composeCmd = await getComposeCommand();
     const composeFile = join(rootDir, 'infra', 'docker-compose.yml');
     log('docker', 'starting synapse + element (local-only)');
-    await execStream(`${composeCmd} -f "${composeFile}" up -d`, rootDir, (line) => log('docker', line));
+    try {
+        await execStream(`${composeCmd} -f "${composeFile}" up -d`, rootDir, (line) => log('docker', line));
+    }
+    catch (err) {
+        // Handle docker-compose v1 ContainerConfig bug
+        if (err.message?.includes('ContainerConfig')) {
+            log('docker', 'detected corrupted containers, cleaning up...');
+            await exec(`${composeCmd} -f "${composeFile}" rm -f`);
+            log('docker', 'retrying startup...');
+            await execStream(`${composeCmd} -f "${composeFile}" up -d`, rootDir, (line) => log('docker', line));
+        }
+        else {
+            throw err;
+        }
+    }
     log('docker', `waiting for synapse at ${HOMESERVER}`);
     await retry(async () => {
         const ready = await checkServer(HOMESERVER);
