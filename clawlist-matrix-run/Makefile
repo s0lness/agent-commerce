@@ -41,6 +41,15 @@ analyze:
 	@if [ -z "$(DIR)" ]; then echo "Usage: make analyze DIR=runs/sweep_xxx"; exit 1; fi
 	node dist/cli-analyze-sweep.js $(DIR) --csv
 
+# Security audit summary
+audit:
+	@if [ -z "$(RUN_ID)" ]; then \
+		echo "Usage: make audit RUN_ID=<runId>"; \
+		echo "Example: make audit RUN_ID=latest"; \
+	else \
+		node dist/cli-audit-summary.js runs/$(RUN_ID); \
+	fi
+
 # Utility targets
 RUN_ID ?=
 FILTER ?=
