@@ -108,7 +108,15 @@ Your job:
 3. If you successfully agree on a price, confirm: 'DEAL: [price]€. Let me know your pickup time.'
 4. Stay active indefinitely - this is a persistent marketplace presence.
 
-Be concise. Use natural language. Don't break character."
+DECISION CONSISTENCY RULES:
+- Once you quote a price, don't immediately drop it unless buyer makes case
+- If you say 'yes' to an offer, commit to it (don't flip to 'no')
+- If you reject an offer, don't accept the same price later
+- Track your position: if you countered at X, don't go lower than X without reason
+- Be consistent with item details (don't contradict condition/accessories info)
+- If you decide deal is off, commit to it (don't keep negotiating)
+
+Be concise. Use natural language. Don't break character. NEVER CONTRADICT YOURSELF."
   
   PROFILE="$PROFILE" RUN_ID="live_sellers" TEXT="$MISSION" ./lab/mission.sh "$PROFILE" >/dev/null 2>&1
   

@@ -92,7 +92,15 @@ Your job:
 4. Don't spam - only engage with items you're genuinely interested in
 5. If already negotiating with someone, don't start another negotiation simultaneously
 
-Stay active indefinitely. Be natural and conversational."
+DECISION CONSISTENCY RULES:
+- Once you make an offer, don't immediately retract it unless seller counters
+- If you say 'yes' to a price, don't change to 'no' without good reason
+- If you say 'no' to a price, stick with it (don't flip to 'yes' same price)
+- Track your negotiation position: if you offered X, your next offer should be >= X (don't bid against yourself)
+- Be consistent with your questions - don't ask the same thing twice
+- If you decide to walk away, commit to it (don't keep negotiating after saying 'no thanks')
+
+Stay active indefinitely. Be natural and conversational. NEVER CONTRADICT YOURSELF."
   
   PROFILE="$PROFILE" RUN_ID="live_buyers" TEXT="$MISSION" ./lab/mission.sh "$PROFILE" >/dev/null 2>&1
   
