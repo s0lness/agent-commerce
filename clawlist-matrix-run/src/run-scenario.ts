@@ -130,11 +130,16 @@ async function main() {
   // Score
   await scoreRun(outDir, scenario);
 
-  // Create latest symlink
+  // Create/update latest symlink
+  const latestLink = join(ROOT_DIR, 'runs', 'latest');
   try {
-    await symlink(join(ROOT_DIR, 'runs', runId), join(ROOT_DIR, 'runs', 'latest'));
-  } catch {
-    // Ignore if symlink already exists
+    // Remove old symlink if it exists
+    await import('node:fs/promises').then(fs => fs.unlink(latestLink).catch(() => {}));
+    // Create new symlink (relative path for portability)
+    await symlink(runId, latestLink);
+    log('run-scenario', `updated runs/latest -> ${runId}`);
+  } catch (err) {
+    logError('run-scenario', `failed to update latest symlink: ${err}`);
   }
 
   log('run-scenario', `done: ${runId}`);
