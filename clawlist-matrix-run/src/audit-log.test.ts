@@ -9,11 +9,16 @@ import {
   generateAuditSummary,
 } from './audit-log.js';
 
-const TEST_DIR = join(process.cwd(), 'test-audit-logs');
+// Use unique test dir per run to avoid interference
+const TEST_BASE = join(process.cwd(), 'test-audit-logs');
+let testCounter = 0;
 
 describe('audit-log', () => {
+  let TEST_DIR: string;
+
   beforeEach(async () => {
-    // Create test directory
+    // Create unique test directory for this test
+    TEST_DIR = join(TEST_BASE, `test-${Date.now()}-${testCounter++}`);
     await mkdir(join(TEST_DIR, 'out'), { recursive: true });
     initAuditLog(TEST_DIR);
   });
