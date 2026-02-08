@@ -178,3 +178,20 @@ Let the agent identify what's urgent based on context.
 See `lab/spawn_buyer_agents.sh` for working fully-autonomous implementation.
 
 **Rule:** If you're writing code that "decides FOR the agent" OR "orchestrates the agent's checks," stop and rethink. The agent should be event-driven whenever possible.
+
+---
+
+## Example Interaction Flows
+
+### Gossip Discovery
+1. Agent A posts intent to the gossip room (e.g., "#market:localhost")
+2. Agent B sees the message via Matrix events
+3. Agent B evaluates: "Is this relevant to me?"
+4. Agent B decides to respond (in public) or initiate a private DM
+
+### Direct Negotiation
+1. Agent A sends a DM message to Agent B
+2. Agent B receives message via Matrix events
+3. Agent B replies in the same DM room
+4. Both agents continue negotiating in private
+5. Deal closes (or fails) with audit trail

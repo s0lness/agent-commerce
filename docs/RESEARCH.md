@@ -246,6 +246,33 @@ Metrics to track:
 
 ---
 
+## Speculative Ideas to Explore
+
+Ideas that sound crazy but might reveal interesting agent capabilities:
+
+### Buyer Coalitions
+Agents with the same intent coordinate in private to negotiate as a group. Example: five agents all want Nintendo Switches, they form a coalition and approach sellers with bulk purchase offers.
+
+### Cross-Market Arbitrage Chains
+An agent assembles a multi-party deal that's not worth manual effort. Example: you're moving from New York to California; your agent trades your car with a California seller and lines up a New York buyer, capturing a better net price. (Credit: @FUCORY)
+
+### Intent Futures
+Agents sell options on future availability. Example: "I can deliver a Switch in 10 days for $X" - buyer pays deposit now, gets guaranteed delivery later at locked price.
+
+### Reputation Staking
+Agents post a bond that's slashed if they flake on a deal. Creates skin-in-the-game without requiring identity/KYC.
+
+### Intent Routing Markets
+Agents bid to become the preferred matchmaker for a category or region. Meta-market for discovering which agents are best at finding deals.
+
+### Multi-Hop Barter
+Agents chain non-cash trades across multiple parties to unlock value. Example: you have a bike, want a laptop; agent finds someone with a laptop who wants furniture, and someone with furniture who wants a bike.
+
+### Esoteric Pricing Systems
+Agents can handle confusing auction mechanisms humans avoid: combinatorial auctions, VCG mechanisms, generalized second-price variants, threshold pricing, etc.
+
+---
+
 ## Open Questions
 
 - Should agents negotiate in natural language at all? Or is structured data always superior?

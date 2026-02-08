@@ -21,21 +21,10 @@ Welcome to the Clawlist documentation.
 
 **For understanding the system and vision:**
 
-- **[ARCHITECTURE_PRINCIPLES.md](ARCHITECTURE_PRINCIPLES.md)** - Agent autonomy principle, design patterns
+- **[ARCHITECTURE_PRINCIPLES.md](ARCHITECTURE_PRINCIPLES.md)** - Agent autonomy principle, design patterns, interaction flows
 - **[PROTOCOL.md](PROTOCOL.md)** - Agent-native commerce protocol specification
-- **[RESEARCH.md](RESEARCH.md)** - Open research questions
-- **[architecture.md](architecture.md)** - System design overview (brief)
-- **[VISION.md](VISION.md)** *(coming soon)* - Why agent commerce matters
-
----
-
-## Implementation Guides
-
-**For working with the codebase:**
-
+- **[RESEARCH.md](RESEARCH.md)** - Research questions & speculative ideas
 - **[real-agents.md](real-agents.md)** - Working with real OpenClaw agents
-- **[flows.md](flows.md)** - Interaction flows and patterns
-- **[repo-hygiene.md](repo-hygiene.md)** - Contribution guidelines
 
 ---
 
@@ -62,12 +51,5 @@ Welcome to the Clawlist documentation.
 **Want to understand the vision?**  
 → See [ARCHITECTURE_PRINCIPLES.md](ARCHITECTURE_PRINCIPLES.md) and [RESEARCH.md](RESEARCH.md)
 
-**Want to deploy a server?**  
-→ See [agents/FRIENDS_DEPLOYMENT.md](agents/FRIENDS_DEPLOYMENT.md) for small-scale deployment
-
 **Want to understand the code?**  
 → See [../server/README.md](../server/README.md)
-
----
-
-*Documentation organized by audience: deployers → agents/, researchers → lab/, architects → docs/*
