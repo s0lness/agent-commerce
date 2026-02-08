@@ -5,7 +5,7 @@ This is the "sandbox" mode where you explore the marketplace via Telegram.
 ## Quick Start (from scratch)
 
 ```bash
-cd ~/clawlist/clawlist-matrix-run
+cd ~/clawlist/lab
 
 # Start everything + populate with 8 listings
 make live-start POPULATE=8
@@ -106,7 +106,7 @@ watch -n 60 ./lab/live_watchdog.sh &
 ```bash
 crontab -e
 # Add this line:
-# */5 * * * * cd ~/clawlist/clawlist-matrix-run && ./lab/live_watchdog.sh >/dev/null 2>&1
+# */5 * * * * cd ~/clawlist/lab && ./lab/live_watchdog.sh >/dev/null 2>&1
 ```
 
 ## Stop Everything

@@ -2,9 +2,12 @@
 node_modules/
 
 # Build outputs
-/dist/
-/dist-tools/
-/dist-tests/
+/server/dist/
+/server/dist-tools/
+/server/dist-tests/
+/lab/dist/
+/lab/dist-tools/
+/lab/dist-tests/
 
 # Logs
 /logs/
@@ -14,9 +17,12 @@ node_modules/
 *.log
 
 # Local configs (often contain secrets)
-/config/agent_*.json
-/config/scenario.local.json
-/config/openclaw.local.env
+/server/config/agent_*.json
+/server/config/scenario.local.json
+/server/config/openclaw.local.env
+/lab/config/agent_*.json
+/lab/config/scenario.local.json
+/lab/config/openclaw.local.env
 *.env
 *.env.*
 *secrets.env
@@ -25,9 +31,9 @@ node_modules/
 synapse/
 
 # Matrix lab local state (do not commit)
-clawlist-matrix-run/.local/
-clawlist-matrix-run/runs/
-clawlist-matrix-run/synapse-data*/
+lab/.local/
+lab/runs/
+lab/synapse-data*/
 
 # Local trash
 .trash/

@@ -1,33 +1,34 @@
-# Clawlist Matrix Bridge
+# Clawlist - Agent-to-Agent Commerce
 
-Multi-agent coordination via self-hosted Matrix. Run multiple OpenClaw instances that talk to each other through your own Synapse server. This repo provides a TypeScript bridge that logs Matrix traffic and forwards wake events to OpenClaw.
+Multi-agent marketplace research framework. Test how agents negotiate deals, discover protocols, and enable new forms of trade.
 
-## What This Does
+## What This Provides
 
-- Connects to Matrix using bot credentials
-- Joins a public gossip room and a private DM room
-- Logs every message to `logs/events.jsonl`
-- Forwards new messages to OpenClaw wake events (optional)
+- **Research Lab:** Persistent Matrix playground for testing agent strategies
+- **154 Tests:** Comprehensive validation including security hardening
+- **Production Server:** Experimental Matrix-based commerce platform
+- **Documentation:** Architecture, deployment guides, research questions
 
-## Requirements
+## Repository Structure
 
-- Synapse (self-hosted)
-- Node 20+
-- Two or more OpenClaw instances (or multiple accounts on one machine)
+- `lab/` - Research & testing framework (start here for testing)
+- `server/` - Production server code
+- `docs/` - Documentation and guides
 
 ## Quick Start
 
 ```bash
-# 1) Install deps
+# For researchers/testers
+cd lab/
 npm install
+make up          # Start Synapse + Element Web
+make bootstrap   # Initialize users/rooms
+make scenario SCENARIO=switch_basic
 
-# 2) Create local configs
-cp config/agent.example.json config/agent_a.json
-cp config/agent.example.json config/agent_b.json
-
-# 3) Edit user_id / password / device_id for each config
-
-# 4) Create rooms and invite agent B
+# For production deployment
+cd server/
+npm install
+# See docs/DEPLOYMENT.md (coming soon)
 npm run setup
 
 # 5) Start the bridge (per agent)

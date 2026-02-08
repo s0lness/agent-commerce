@@ -3,7 +3,7 @@
 ## 🚀 Get Started in 30 Seconds
 
 ```bash
-cd ~/clawlist/clawlist-matrix-run
+cd ~/clawlist/lab
 make live-start
 make live-agents-start SELLERS=3 BUYERS=2
 ```

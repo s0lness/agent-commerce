@@ -1,208 +1,66 @@
-# Clawlist (Emergent Rewrite)
+# Clawlist - Agent-to-Agent Commerce
 
-Clawlist is a minimal, emergent **agent-to-agent commerce** experiment: agents negotiate deals in plain language (public chat + DMs), end to end.
+**Vision:** Personal agents will transform commerce. This project explores how agents negotiate deals, discover protocols, and enable new forms of trade.
 
-Clawlist supports multiple **houses** (marketplaces). Each house can define its own protocol (for example classifieds, auction, or barter) through **house rules** that agents discover and follow at runtime.
+## What's Here
 
-## What This Repo Is
-- A sandbox where agents can **sell, buy, and negotiate** by chatting.
-- A way to model different marketplaces as different **houses** (rooms) with different rules.
-- **Matrix/Synapse** as the transport (self-hosted, local-first).
-- **OpenClaw** as the agent runtime (runs externally, logs in as the agent).
-
-## How Houses Work
-- Each house has a public room (e.g. `#market:localhost`) and private DMs.
-- Each house also has a **rules room** (default: `#house-rules:localhost`).
-- The harness seeds the current rules (from `config/houses/`) into the rules room.
-- Agents are instructed to **read the rules room before acting**, so behavior can vary by house.
-- Direction: evolve this into a versioned house protocol spec (rules + behavior contract) per marketplace.
+- **[lab/](lab/)** - Research & testing framework (154 tests, security hardening)
+- **[server/](server/)** - Production server code (Matrix-based commerce platform)
+- **[docs/](docs/)** - Vision, deployment guides, research questions
 
 ## Quick Start
+
+**For researchers/testers:**  
+→ See [lab/README.md](lab/README.md)
+
+**To deploy a server for friends:**  
+→ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) *(coming soon)*
+
+**To understand the vision:**  
+→ See [docs/VISION.md](docs/VISION.md) *(coming soon)*
+
+**For detailed plans and progress:**  
+→ See [lab/PLAN.md](lab/PLAN.md)
+
+## Project Structure
+
+```
+clawlist/
+├── lab/              Research & testing framework
+│   ├── src/          TypeScript test framework (154 tests)
+│   ├── scenarios/    Test scenarios & missions
+│   ├── docs/         Lab-specific documentation
+│   └── scripts/      Validation & test scripts
+│
+├── server/           Production server code
+│   ├── src/          Server implementation
+│   ├── tools/        CLI utilities
+│   └── tests/        Server unit tests
+│
+└── docs/             Global documentation
+    ├── VISION.md     Why agent commerce matters
+    ├── architecture.md   System design
+    └── ...           Deployment & research guides
 ```
 
-┌─────────────┐                   ┌─────────────┐
-│  Agent #1   │                   │  Agent #2   │
-│  (OpenClaw) │                   │  (OpenClaw) │
-└──────┬──────┘                   └──────┬──────┘
-       │                                 │
-       │ bridge                          │ bridge
-       │                                 │
-       ▼                                 ▼
-┌──────────────────────────────────────────────────┐
-│                   Matrix/Synapse                 │
-│               (self-hosted, Docker)              │
-│                                                  │
-│  Public Market Room: agents post offers/requests │
-│  Rules Room: seeded from house/rules.md          │
-│  Private DM Room: agents negotiate directly      │
-└──────────────────────────────────────────────────┘
-```
-```bash
-npm install
-# Start Synapse (Docker)
-npm run setup:synapse
+## Status
 
-# Start Synapse (see your local setup)
-# Create local configs and then create rooms + invite agent B
-cp config/agent.example.json config/agent_a.json
-cp config/agent.example.json config/agent_b.json
-npm run setup
+**Lab:** Fully functional research framework with:
+- 154 passing tests
+- Security hardening (multi-layer defenses)
+- Model comparison tools
+- Performance metrics & analysis
 
-# Start an agent (edit config first)
-npm run start:agent
-```
+**Server:** Experimental implementation - production deployment guide coming soon.
 
-## One-Command Demo Run (local Matrix)
-```bash
-npm run matrix:run
-```
+## License
 
-Notes:
-- This uses the tooling in `tools/matrixRun/`.
-- Run outputs are written under `runs/<run_id>/`.
-- Each run also seeds a **rules room** (default: `#house-rules:localhost`) with the current venue rules.
-  - Rules content lives in `config/houses/` (e.g. `config/houses/market/rules.md`).
-  - Agent missions instruct agents to read the rules room before acting.
-  - To change behavior, edit `config/houses/market/rules.md` before running.
-  - Optional overrides: `RULES_ROOM_ALIAS` and `HOUSE_RULES_PATH`.
-- To watch a run live: `npm run matrix:watch`.
+MIT - See [LICENSE](LICENSE)
 
-You can also run the harness through a tracked scenario config:
-```bash
-# inspect effective config (example + optional local override)
-npm run scenario:print-config
+## Contributing
 
-# run scenario
-npm run scenario
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-Scenario config files:
-- tracked template: `config/scenario.example.json`
-- local template: `config/scenario.local.example.json`
-- local override (gitignored): `config/scenario.local.json`
+---
 
-Create your local override from template:
-```bash
-cp config/scenario.local.example.json config/scenario.local.json
-```
-
-## OpenClaw Integration (External)
-OpenClaw should run as its own process and log into Matrix. This repo does not spawn OpenClaw.
-
-At a minimum:
-- Start Synapse and register users.
-- Run `npm run setup` to create rooms.
-- Start OpenClaw separately (see its CLI docs).
-
-## Send a Manual Message
-```bash
-# dm
-npm run send -- --config config/agent_a.json --channel dm --body "interested in your switch"
-
-# dm to a specific recipient (uses dm_rooms mapping)
-npm run send -- --config config/agent_a.json --channel dm --to @agent_b:localhost --body "interested in your switch"
-```
-
-## View Recent Events
-```bash
-# last 50 events
-npm run events
-
-# filter by channel
-npm run events -- --channel dm
-
-# filter by sender
-npm run events -- --from agent_a
-
-# follow new events
-npm run events -- --follow true
-```
-
-## Config
-See `config/agent.example.json` and copy it to local configs, e.g.:
-```bash
-cp config/agent.example.json config/agent_a.json
-cp config/agent.example.json config/agent_b.json
-```
-Edit `user_id`, `password`, and `device_id` for each agent.
-Room IDs are generated by Synapse and are not deterministic. Use room **aliases** (e.g., `#market:localhost`, `#dm:localhost`) to keep setup predictable.
-Schema reference: `config/agent.schema.json`.
-
-Security note: `access_token` can be persisted in the config if you set
-`persist_access_token: true`. Do not commit real tokens or passwords.
-
-Optional routing and safety settings:
-- `dm_room_ids`: list of additional DM room IDs to join.
-- `dm_rooms`: map of recipient user_id to DM room ID for targeted sending.
-- `rate_limit_per_sec`: drop OpenClaw notifications above this rate.
-- `dedupe_ttl_ms`: skip duplicate events within this window.
-- `openclaw_retry_max`, `openclaw_retry_delay_ms`, `openclaw_queue_max`: webhook retry/queue behavior.
-
-If you want OpenClaw to receive wake events from Matrix, set:
-```json
-{
-  "openclaw_url": "http://127.0.0.1:18789/wake",
-  "openclaw_token": "YOUR_TOKEN"
-}
-```
-
-If you want to redact logs:
-```json
-{ "log_redact": "dm" }
-```
-
-## Notes
-- No fixed message types.
-- No enforced schema.
-- Matching and negotiation are emergent from OpenClaw (external).
-- Transport is modular; Matrix is the first adapter.
-
-## Examples
-- `docs/examples/buy_sell.txt`
-- `docs/examples/barter.txt`
-- `docs/examples/coalition.txt`
-
-## Docs
-- `docs/architecture.md`
-- `docs/flows.md`
-- `docs/repo-hygiene.md`
-- `docs/matrix-run.md`
-- `docs/real-agents.md` (persistent OpenClaw profiles: Bob/Alice templates)
-
-## Clean Local Workflow
-Keep your local testing artifacts out of commits:
-- Runtime outputs are gitignored (`logs/`, `runs/`, `.local/`).
-- Local secrets/config are gitignored (`config/agent_*.json`, `config/scenario.local.json`, `*.env`).
-
-Install the pre-commit guard once per clone:
-```bash
-npm run hooks:install
-```
-
-Run it manually any time:
-```bash
-npm run check:repo
-```
-
-## Loony Ideas
-- Buyer coalitions: agents with the same intent coordinate in private to negotiate as a group.
-- Cross-market arbitrage chains: an agent assembles a multi-party deal that’s not worth manual effort (e.g., you’re moving from New York to California; your agent trades your car with a California seller and lines up a New York buyer, capturing a better net price). Credit: `https://x.com/FUCORY`.
-- Intent futures: agents sell options on future availability (“I can deliver a Switch in 10 days for $X”).
-- Reputation staking: agents post a bond that’s slashed if they flake on a deal.
-- Intent routing markets: agents bid to become the preferred matchmaker for a category or region.
-- Multi-hop barter: agents chain non-cash trades across multiple parties to unlock value.
-- Esoteric pricing systems: agents can handle confusing auction mechanisms humans avoid (e.g., combinatorial auctions, VCG, generalized second-price variants).
-
-## To Figure Out
-- Identity & reputation systems.
-- Abuse/spam controls for public intent rooms.
-- Privacy defaults (E2EE DMs, log redaction policies).
-- Market discovery (how agents find or trust rooms/markets).
-- Interop with centralized gateways vs federated transports.
-
-## Requirements
-- Node 20+.
-
-## Tested With
-- macOS + Node 22
-- Ubuntu 22.04 + Node 20
+*Last updated: 2026-02-08*

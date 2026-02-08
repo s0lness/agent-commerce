@@ -437,6 +437,47 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
 
 ---
 
+---
+
+## Phase 15 — Repository reorganization ✅
+
+**Goal:** Clear structure for newcomers: separate research lab from production server.
+
+**Status:** COMPLETE (2026-02-08)
+
+**Problem:**
+- Confusing structure (what's production? what's research?)
+- `clawlist-matrix-run/` name is ambiguous
+- Duplicate docs in multiple places (PLAN.md, SECURITY.md, docs/)
+- No clear navigation guide
+
+**Solution:**
+```
+clawlist/
+├── lab/           (was: clawlist-matrix-run/)  - Research framework
+├── server/        (was: root src/tools/etc)    - Production code
+└── docs/          (global docs + navigation)
+```
+
+**Migration tasks:**
+- [x] Rename `clawlist-matrix-run/` → `lab/`
+- [x] Move root `src/`, `tools/`, `tests/`, `config/` → `server/`
+- [x] Create new READMEs (root, lab/, server/, docs/)
+- [x] Consolidate duplicate docs
+- [x] Update all internal references
+- [x] Update CI workflows
+- [x] Move LICENSE and CONTRIBUTING.md to root
+
+**Result:**
+- Researchers → `lab/` (clear purpose)
+- Friends joining → `docs/DEPLOYMENT.md`
+- Server code → `server/`
+- No ambiguous names or duplicate files
+
+**See:** REORGANIZATION_PLAN.md for detailed migration steps
+
+---
+
 ## Research Phases (see RESEARCH.md)
 
 Phases 11+ are **research questions**, not engineering tasks. They live in **RESEARCH.md**.
