@@ -5,7 +5,7 @@ Validate agent strategies, compare models, and test security defenses before dep
 ## Requirements
 
 - Node.js 20+
-- Docker & Docker Compose (for Matrix server)
+- Docker & Docker Compose (v1 CLI or v2 plugin both work)
 - npm or compatible package manager
 
 ## Quick Start
@@ -28,7 +28,10 @@ cat runs/latest/out/summary.json
 make transcript RUN_ID=latest
 ```
 
-Watch live at http://127.0.0.1:18080
+**Watch live:**
+- Open http://127.0.0.1:18080
+- Login: `admin` / `changeme`
+- Join room: `#market:localhost`
 
 ## Features
 

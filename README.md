@@ -39,7 +39,10 @@ make scenario SCENARIO=switch_basic  # Run test negotiation
 make transcript RUN_ID=latest        # View results
 ```
 
-Watch live at http://127.0.0.1:18080
+**Watch live:**
+- Open http://127.0.0.1:18080
+- Login: `admin` / `changeme`
+- Join room: `#market:localhost`
 
 ---
 

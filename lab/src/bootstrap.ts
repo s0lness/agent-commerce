@@ -67,12 +67,30 @@ export async function bootstrap(rootDir: string): Promise<BootstrapResult> {
     buyerMxid = buyerLogin.user_id;
   }
 
+  // Create/login admin account for human observers
+  let adminToken = secrets.ADMIN_TOKEN;
+  let adminMxid = secrets.ADMIN_MXID;
+  const adminClient = createClient(HOMESERVER);
+  
+  if (adminToken && adminMxid) {
+    log('bootstrap', `reusing cached admin token for ${adminMxid}`);
+    adminClient.accessToken = adminToken;
+    adminClient.userId = adminMxid;
+  } else {
+    log('bootstrap', 'creating admin user for human observers');
+    const adminLogin = await register(adminClient, 'admin', 'changeme');
+    adminToken = adminLogin.access_token;
+    adminMxid = adminLogin.user_id;
+  }
+
   // Save tokens
   await writeEnvFile(secretsPath, {
     SELLER_TOKEN: sellerToken,
     SELLER_MXID: sellerMxid,
     BUYER_TOKEN: buyerToken,
     BUYER_MXID: buyerMxid,
+    ADMIN_TOKEN: adminToken,
+    ADMIN_MXID: adminMxid,
   });
 
   // Create or join market room
@@ -106,9 +124,20 @@ export async function bootstrap(rootDir: string): Promise<BootstrapResult> {
     }
   }
 
+  // Ensure admin is joined
+  try {
+    await joinRoom(adminClient, roomId);
+    log('bootstrap', 'admin joined market room');
+  } catch (err: any) {
+    if (!err.message.includes('already in')) {
+      throw err;
+    }
+  }
+
   // Grant admin power level
   try {
-    await setPowerLevel(sellerClient, roomId, '@admin:localhost', 100);
+    await setPowerLevel(sellerClient, roomId, adminMxid, 100);
+    log('bootstrap', 'admin granted elevated permissions');
   } catch (err: any) {
     log('bootstrap', `failed to set admin power level: ${err.message}`);
   }
@@ -143,6 +172,12 @@ export async function bootstrap(rootDir: string): Promise<BootstrapResult> {
 
   log('bootstrap', `market room: ${MARKET_ALIAS} (${roomId})`);
   log('bootstrap', `wrote: ${secretsPath}, ${bootstrapPath}`);
+
+  // Print credentials for human observers
+  console.log('\n✅ Bootstrap complete!\n');
+  console.log('📺 Element Web: http://127.0.0.1:18080');
+  console.log('👤 Login: admin / changeme');
+  console.log('🏠 Room: #market:localhost\n');
 
   return result;
 }
