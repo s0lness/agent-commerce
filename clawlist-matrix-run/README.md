@@ -2,6 +2,19 @@
 
 **TypeScript-based test framework for autonomous AI agent marketplace negotiation.**
 
+## Recent Updates (2026-02-08)
+
+✅ **Phase 11-14 Complete:**
+- 67 unit tests passing (price parsing, schema validation, statistics, logging)
+- Statistical sweep analysis (mean/median/stddev, CSV export)
+- Structured logging system (DEBUG/INFO/WARN/ERROR levels, JSON mode)
+- Scenario schema validation
+- Transcript viewer CLI (color-coded, filterable)
+- Enhanced export CLI (filter by agent/date/format)
+- Proactive DM monitoring for operator bot
+- Decision consistency rules to prevent agent flip-flopping
+- 5 diverse scenarios available
+
 ## Quick Start
 
 ```bash
@@ -41,13 +54,24 @@ make bootstrap     # Create users + #market:localhost room
 
 ### Testing
 ```bash
+make test          # Run unit tests (67 tests)
+make validate      # Validate scenario schemas
 make scenario SCENARIO=switch_basic DURATION_SEC=120
 make sweep SCENARIO=switch_basic N=10
 ```
 
+### Analysis & Debugging
+```bash
+make analyze DIR=runs/sweep_xxx       # Statistical analysis of sweep results
+make transcript RUN_ID=latest FILTER=DEAL  # Pretty-print transcript (color-coded)
+make export RUN_ID=latest FORMAT=csv  # Export to JSONL/JSON/CSV
+make logs RUN_ID=xxx                  # Tail run logs
+```
+
 ### Cleanup
 ```bash
-make cleanup       # Stop stuck gateways (if needed)
+make clean-runs KEEP=10    # Delete old runs, keep 10 most recent
+make cleanup               # Stop stuck gateways (if needed)
 ```
 
 ## Test Modes
