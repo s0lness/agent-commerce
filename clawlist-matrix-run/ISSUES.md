@@ -10,17 +10,16 @@
 
 **Status:** These issues are documented but NOT yet fixed. See PLAN.md Phase 11 for scheduled fixes.
 
-## Current Status (2026-02-08 02:24)
+## Current Status (2026-02-08 05:50)
 
 📋 **Scheduled for Fix (PLAN.md Phase 11):**
-1. Internal messages leaking to public market room → PLAN.md Phase 11
 2. Operator bot not proactive (manual DM checks) → PLAN.md Phase 11
-3. Buyer agent flip-flopping decisions → PLAN.md Phase 11
 8. Approval workflow undefined → PLAN.md Phase 11 (documented as intended behavior for now)
 
 ✅ **FIXED (2026-02-08):**
-6. Scoring: offer attribution bug → FIXED (commit pending)
-7. Timing calculation bug → FIXED (commit pending)
+3. Buyer agent flip-flopping decisions → FIXED (commit b8c6235)
+6. Scoring: offer attribution bug → FIXED (commit bbbed06)
+7. Timing calculation bug → FIXED (commit bbbed06)
 
 ✅ **Fixed:**
 - Matrix plugin auto-enable (commit 8197c35)
@@ -96,6 +95,24 @@ Seller: "I can do 150€"
 
 ---
 
+### 1. Internal Messages Leaking to Public Market (NEEDS VERIFICATION)
+**Problem:** Approval requests and deal confirmations appearing in #market:localhost  
+**Examples:**
+- "APPROVAL NEEDED: accept 135€, meet Châtelet tomorrow 15:00"
+- "DEAL: 135€. Châtelet tomorrow at 15:00 works for me. See you there!"
+
+**Current Status:** ⚠️ **NEEDS VERIFICATION** - recent tests show correct routing
+**Expected:** Only public listings in market room; approvals/deals stay in DMs or internal
+
+**Evidence:**
+- Test runs show "DEAL:" messages in dm.jsonl, NOT in market.jsonl ✅
+- Agent missions instruct "post DEAL in DM" ✅
+- "APPROVAL NEEDED" instructed for DM room, not market ✅
+
+**Action:** Test more scenarios to confirm this is fixed or never occurred
+
+---
+
 ### 2. Operator Bot: Proactive DM Monitoring (NOT FIXED)
 **Problem:** User has to manually ask bot to check DMs  
 **Current Status:** ❌ **NOT FIXED** - Passive, waits for explicit "check DMs" command  
@@ -110,28 +127,6 @@ Seller: "I can do 150€"
 - Poll Matrix DMs every 30-60s or use webhooks
 - Send notification to Telegram when new Matrix DM received
 - Example: "📬 New DM from @switch_buyer: [preview]"
-
-**Phase:** Can fix now (pre-TypeScript)
-
----
-
-### 2. Internal Messages Leaking to Public Market (NOT FIXED)
-**Problem:** Approval requests and deal confirmations appearing in #market:localhost  
-**Examples:**
-- "APPROVAL NEEDED: accept 135€, meet Châtelet tomorrow 15:00"
-- "DEAL: 135€. Châtelet tomorrow at 15:00 works for me. See you there!"
-
-**Current Status:** ❌ **NOT FIXED** - still leaking to public room  
-**Expected:** Only public listings in market room; approvals/deals stay in DMs or internal
-
-**Root Cause:** Need to investigate where these messages originate and add routing filters
-
-**Fix Required:**
-- Trace message flow (where do approval messages come from?)
-- Review message routing logic in operator bot
-- Ensure approval workflow uses Telegram DMs only
-- Deal confirmations should stay in Matrix DM thread
-- Add message classification (public vs internal vs approval)
 
 **Phase:** Can fix now (pre-TypeScript)
 
