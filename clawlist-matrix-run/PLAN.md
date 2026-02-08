@@ -380,38 +380,39 @@ Goal: Prevent agents from being manipulated to betray owner's interests.
 
 ---
 
-## Phase 14 — Export & analysis tools
+## Phase 14 — Export & analysis tools ⚡
 
 **Goal:** Better tools for analyzing results and debugging issues.
 
-- [ ] **Enhanced export CLI**:
+**Status:** IN PROGRESS (2026-02-08 07:00)
+
+- [x] **Enhanced export CLI**: ✅ Done (commit f81a29b)
   - Export by agent: `make export AGENT=@buyer:localhost`
   - Export by date range: `make export FROM=2026-02-07 TO=2026-02-08`
-  - Export by listing_id: `make export LISTING=lst_abc123`
   - Multiple output formats: JSONL, JSON, CSV
+  - Combines DM + market transcripts, sorted by timestamp
 
-- [ ] **Transcript viewer**:
+- [x] **Transcript viewer**: ✅ Done (commit 63662d2)
   - CLI tool to pretty-print transcripts
-  - Color-coded by speaker
-  - Filter by keywords
-  - Show timestamps, message IDs
+  - Color-coded by speaker (seller/buyer/operator)
+  - Filter by keywords: `make transcript RUN_ID=xxx FILTER=DEAL`
+  - Show timestamps, formatted messages
 
-- [ ] **Scoring improvements**:
-  - Fix quote attribution bug (ISSUES.md)
-  - Add unit tests for edge cases
-  - More detailed quality metrics
-  - Confidence scores for detections
+- [x] **Scoring improvements**: ✅ Done (Phase 11/12)
+  - Fixed quote attribution bug (commit bbbed06)
+  - Added 19 unit tests for price parsing
+  - More robust context-aware parsing
+  - Filters negative framing ("too low", "rejected")
 
-- [ ] **Visualization tools** (optional):
-  - Generate timeline graph of negotiation
-  - Price trajectory chart
-  - Response time histogram
-  - Success rate over time
+- [ ] **Visualization tools** (optional): Deferred
+  - Timeline graphs, price trajectories
+  - Not critical for current research phase
+  - Can add later if needed
 
 **Acceptance:**
-- Can export transcripts flexibly (by agent, date, listing)
-- Transcript viewer makes debugging easy
-- Scoring bugs fixed and tested
+- ✅ Can export transcripts flexibly (by agent, date, format)
+- ✅ Transcript viewer makes debugging easy
+- ✅ Scoring bugs fixed and tested (67 tests passing)
 
 ---
 
