@@ -10,13 +10,13 @@
 
 **Status:** These issues are documented but NOT yet fixed. See PLAN.md Phase 11 for scheduled fixes.
 
-## Current Status (2026-02-08 05:50)
+## Current Status (2026-02-08 06:05)
 
 📋 **Scheduled for Fix (PLAN.md Phase 11):**
-2. Operator bot not proactive (manual DM checks) → PLAN.md Phase 11
 8. Approval workflow undefined → PLAN.md Phase 11 (documented as intended behavior for now)
 
 ✅ **FIXED (2026-02-08):**
+2. Operator bot not proactive (manual DM checks) → FIXED (commit 75f4552)
 3. Buyer agent flip-flopping decisions → FIXED (commit b8c6235)
 6. Scoring: offer attribution bug → FIXED (commit bbbed06)
 7. Timing calculation bug → FIXED (commit bbbed06)
