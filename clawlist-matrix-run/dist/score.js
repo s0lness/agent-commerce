@@ -19,8 +19,9 @@ function parseEuroPrice(text) {
     // Strategy 2: Common price patterns
     // - "take 135", "do 150", "offer 120", "asking 200", "DEAL: 150", "pay 135", etc.
     const patterns = [
-        /(?:take|do|offer|asking|deal|pay|accept|budget|price|cost|lowest|highest|maximum|minimum|floor|ceiling)[\s:]+(\d{2,3})\b/,
+        /(?:take|do|offer|asking|deal|pay|accept|budget|price|cost|lowest|highest|maximum|minimum|floor|ceiling)(?:[\s:]+is)?[\s:]+(\d{2,3})\b/,
         /(\d{2,3})[\s]+(?:is my|is the|cash|euros?)\b/,
+        /\bat[\s:]+(\d{2,3})(?!:)/, // "deal at 135" but not "at 19:15" (time)
     ];
     for (const pattern of patterns) {
         const match = lower.match(pattern);

@@ -10,7 +10,7 @@
   "buyer": {
     "profile": "switch-buyer-aggressive",
     "startOffer": 100,
-    "ceilingPrice": 140
+    "ceilingPrice": 210
   },
   "durationSec": 180,
   "seed": {
