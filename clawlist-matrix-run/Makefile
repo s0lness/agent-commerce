@@ -43,12 +43,23 @@ analyze:
 
 # Utility targets
 RUN_ID ?=
+FILTER ?=
 logs:
 	@if [ -z "$(RUN_ID)" ]; then \
 		echo "Usage: make logs RUN_ID=<runId>"; \
 		ls -t runs/*/out/*.log 2>/dev/null | head -5; \
 	else \
 		tail -f runs/$(RUN_ID)/out/*.log 2>/dev/null || echo "No logs found for $(RUN_ID)"; \
+	fi
+
+transcript:
+	@if [ -z "$(RUN_ID)" ]; then \
+		echo "Usage: make transcript RUN_ID=<runId> [FILTER=keyword]"; \
+		echo "Examples:"; \
+		echo "  make transcript RUN_ID=latest"; \
+		echo "  make transcript RUN_ID=test_123 FILTER=DEAL"; \
+	else \
+		node dist/cli-view-transcript.js runs/$(RUN_ID)/out/dm.jsonl $(if $(FILTER),--filter=$(FILTER),); \
 	fi
 
 KEEP ?= 10
