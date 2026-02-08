@@ -1,8 +1,11 @@
 {
   "name": "clawlist-matrix-run",
   "version": "1.0.0",
+  "description": "TypeScript test framework for autonomous AI agent marketplace negotiation",
+  "keywords": ["ai", "agent", "negotiation", "marketplace", "matrix", "testing", "security"],
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
